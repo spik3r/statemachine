@@ -9,9 +9,13 @@ import org.springframework.statemachine.StateMachine;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import static com.kaitait.statemachine.ValidationService.getRedirectURL;
+import static com.kaitait.statemachine.ValidationService.isOnCorrectPage;
 
 @Controller
 public class CheckoutController {
@@ -36,12 +40,13 @@ public class CheckoutController {
     }
 
     @RequestMapping(path = "checkout/basket_submit")
-    public String basketSubmit() {
+    public RedirectView basketSubmit() throws IOException {
         LOG.info("basketSubmit");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
-
         stateMachine.sendEvent(Events.BASKET_CREATED);
-        return "basketSubmit";
+        RedirectView rv = new RedirectView();
+        rv.setUrl("timeslot");
+        return rv;
     }
 
 
@@ -58,14 +63,17 @@ public class CheckoutController {
 
 
     @RequestMapping(path = "checkout/timeslot_submit")
-    public String timeslotSubmit(HttpServletResponse response) throws IOException {
+    public RedirectView timeslotSubmit(HttpServletResponse response) throws IOException {
         LOG.info("timeslotSubmit");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
+        RedirectView rv = new RedirectView();
         if (!isOnCorrectPage(stateMachine.getState().getId(), Pages.TIMESLOT)) {
-            return redirectIfOnWrongPage(response, stateMachine);
+             rv.setUrl(getRedirectURL(response, stateMachine));
+            return rv;
         }
         stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
-        return "timeslotSubmit";
+        rv.setUrl("confirmation");
+        return rv;
     }
 
     @RequestMapping(path = "checkout/confirmation")
@@ -89,23 +97,5 @@ public class CheckoutController {
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
         stateMachine.sendEvent(Events.AFTER_SALE_SEEN);
         return "aftersale";
-    }
-
-    private static boolean isOnCorrectPage(Pages current, Pages previous) {
-        LOG.info("oder: " + (previous.order - 1 < current.order));
-        LOG.info("oder: " + (previous.order));
-        LOG.info("oder: " + (current.order));
-        if (current.order - 1 < previous.order) {
-            return false;
-        }
-        return true;
-    }
-
-    private static String redirectIfOnWrongPage(HttpServletResponse response, StateMachine stateMachine) throws IOException {
-        LOG.info("redirect");
-        LOG.info("redirectUrl " + stateMachine.getState().toString());
-        final String redirectUrl = stateMachine.getState().getId().toString().toLowerCase();
-        response.sendRedirect(redirectUrl);
-        return redirectUrl;
     }
 }
