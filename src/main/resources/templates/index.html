@@ -1,13 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <link rel="stylesheet" type="text/css" media="all"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}"/>
 </head>
 <body>
-<h1>
-    State Machine foo
-</h1>
-    <td th:text="${page}">...</td>
+<div class="container" th:fragment="common">
+<nav class="navbar navbar-inverse">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Checkout</a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li th:classappend="${page == 'basket' ? 'active' : ''}">
+                    <a href="#" th:href="@{/checkout/basket}">Basket</a>
+                </li>
+                <li th:classappend="${page == 'timeslot' ? 'active' : ''}">
+                    <a href="#" th:href="@{/checkout/timeslot}">Timeslot</a>
+                </li>
+                <li th:classappend="${page == 'confirmation' ? 'active' : ''}">
+                    <a href="#" th:href="@{/checkout/confirmation}">Confirmation</a>
+                </li>
+            </ul>
+        </div>
+        <!--/.nav-collapse -->
+</nav>
+
+<div>
+    <button type="button" class="btn btn-primary pull-right">Next</button>
+
+    <div class="col-9">
+        <h2 class="text-center">Something important</h2>
+        <div th:replace="content"></div>
+    </div>
+
+
+</div>
+
+</div>
 </body>
 </html>

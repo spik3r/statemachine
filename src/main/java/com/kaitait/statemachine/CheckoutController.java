@@ -9,8 +9,6 @@ import org.springframework.statemachine.StateMachine;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -23,7 +21,7 @@ public class CheckoutController {
 
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutController.class);
 
-    @RequestMapping(value = "checkout/basket", method = RequestMethod.GET)
+    @RequestMapping(path = "checkout/basket")
     public String basket(Model model) {
         LOG.info("basket");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
@@ -34,7 +32,7 @@ public class CheckoutController {
                 .build();
         stateMachine.sendEvent(eventsMessage);
         model.addAttribute("page", "basket");
-        return "index";
+        return "basket";
     }
 
     @RequestMapping(path = "checkout/basket_submit")
@@ -49,11 +47,12 @@ public class CheckoutController {
 
 
     @RequestMapping(path = "checkout/timeslot")
-    public String timeslot(HttpServletResponse response) throws IOException {
+    public String timeslot(Model model, HttpServletResponse response) throws IOException {
         LOG.info("timeslot");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
 
         stateMachine.sendEvent(Events.TIMESLOT_PAGE_SEEN);
+        model.addAttribute("page", "timeslot");
         return "timeslot";
     }
 
@@ -70,9 +69,10 @@ public class CheckoutController {
     }
 
     @RequestMapping(path = "checkout/confirmation")
-    public String confirmation() {
+    public String confirmation(Model model) {
         LOG.info("confirmation");
         stateMachine.sendEvent(Events.CONFIRMATION_PAGE_SEEN);
+        model.addAttribute("page", "confirmation");
         return "confirmation";
     }
 
