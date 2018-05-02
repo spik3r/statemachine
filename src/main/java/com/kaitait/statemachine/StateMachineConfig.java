@@ -41,9 +41,7 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
                     LOG.info("Entering Basket State/Page. basketId: " + basketId);
 
                 })
-                .state(Pages.ADDRESS)
                 .state(Pages.TIMESLOT)
-                .state(Pages.PAYMENT)
                 .state(Pages.CONFIRMATION)
                 .end(Pages.AFTERSALE);
 
@@ -95,19 +93,18 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
 
         transitions
                 .withExternal()
-                .source(Pages.BASKET).target(Pages.ADDRESS).event(Events.BASKET_CREATED)
+                .source(Pages.BASKET).target(Pages.TIMESLOT).event(Events.BASKET_PAGE_SEEN)
+                .event(Events.BASKET_CREATED)
                 .and()
+
                 .withExternal()
-                .source(Pages.ADDRESS).target(Pages.TIMESLOT).event(Events.ADDRESS_SELECTED)
+                .source(Pages.TIMESLOT).target(Pages.CONFIRMATION).event(Events.TIMESLOT_PAGE_SEEN)
+                .event(Events.TIMESLOT_SELECTED)
                 .and()
+
                 .withExternal()
-                .source(Pages.TIMESLOT).target(Pages.PAYMENT).event(Events.TIMESLOT_SELECTED)
-                .and()
-                .withExternal()
-                .source(Pages.PAYMENT).target(Pages.CONFIRMATION).event(Events.PAYMENT_METHOD_SELECTED)
-                .and()
-                .withExternal()
-                .source(Pages.CONFIRMATION).target(Pages.AFTERSALE).event(Events.ORDER_CONFIRMED);
+                .source(Pages.CONFIRMATION).target(Pages.AFTERSALE).event(Events.CONFIRMATION_PAGE_SEEN)
+                .event(Events.ORDER_CONFIRMED);
 
     }
 

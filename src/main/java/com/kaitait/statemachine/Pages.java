@@ -6,17 +6,17 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public enum Pages {
-    BASKET(1),
-    ADDRESS(2),
-    TIMESLOT(3),
-    PAYMENT(4),
-    CONFIRMATION(5),
-    AFTERSALE(6);
+    BASKET(1, "checkout/basket"),
+    TIMESLOT(2, "checkout/timeslot"),
+    CONFIRMATION(3, "checkout/confirmation"),
+    AFTERSALE(4, "checkout/aftersale");
 
     final int order;
+    final String url;
 
-    private Pages(int order) {
+    private Pages(int order, String url) {
         this.order = order;
+        this.url = url;
     }
 
     public static Pages find(int page, Supplier<? extends Pages> byDef) {

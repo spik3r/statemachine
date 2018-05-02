@@ -1,10 +1,14 @@
 package com.kaitait.statemachine;
 
 public enum Events {
-    INIT,
+    BASKET_PAGE_SEEN,
     BASKET_CREATED,
-    ADDRESS_SELECTED,
+
+    TIMESLOT_PAGE_SEEN,
     TIMESLOT_SELECTED,
-    PAYMENT_METHOD_SELECTED,
-    ORDER_CONFIRMED
+
+    CONFIRMATION_PAGE_SEEN,
+    ORDER_CONFIRMED,
+
+    AFTER_SALE_SEEN
 }
