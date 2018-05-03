@@ -10,5 +10,10 @@ public enum Events {
     CONFIRMATION_PAGE_SEEN,
     ORDER_CONFIRMED,
 
-    AFTER_SALE_SEEN
+    AFTER_SALE_SEEN;
+
+
+    public boolean isValid(boolean checkbox) {
+        return checkbox;
+    }
 }

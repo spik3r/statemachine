@@ -9,10 +9,13 @@ import org.springframework.statemachine.StateMachine;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.websocket.server.PathParam;
 import java.io.IOException;
 
 import static com.kaitait.statemachine.ValidationService.getRedirectURL;
@@ -23,6 +26,9 @@ public class CheckoutController {
 
     @Autowired
     private StateMachine<Pages, Events> stateMachine;
+
+    @Autowired
+    TimeSlotValidator timeSlotValidator;
 
     private final ValidationService validationService = ValidationService.getValidator();
 
@@ -60,18 +66,42 @@ public class CheckoutController {
         LOG.info("timeslot");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
 
-        stateMachine.sendEvent(Events.TIMESLOT_PAGE_SEEN);
+        Message<Events> eventsMessage = MessageBuilder
+                .withPayload(Events.TIMESLOT_PAGE_SEEN)
+                .setHeader("timeslot_header", "fooooo")
+                .build();
+        stateMachine.sendEvent(eventsMessage);
+
+//        stateMachine.sendEvent(Events.TIMESLOT_PAGE_SEEN);
         model.addAttribute("page", "timeslot");
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId()));
         return "timeslot";
     }
 
 
-    @RequestMapping(path = "checkout/timeslot_submit")
-    public ModelAndView timeslotSubmit(HttpServletResponse response) throws IOException {
-        LOG.info("timeslotSubmit");
+    @RequestMapping(path = "checkout/timeslot_submit", method = RequestMethod.GET)
+    public ModelAndView timeslotSubmit(@RequestParam(value = "isValid", required = false, defaultValue = "false") final boolean timeSlotCheckbox) throws IOException {
+
+        LOG.info("timeSlotId: " + timeSlotCheckbox);
+
+        if (timeSlotValidator.isValid(timeSlotCheckbox)) {
+            stateMachine.getExtendedState();
+            return goNext();
+        }
+        return goBack();
+    }
+
+    private ModelAndView goNext() {
+        LOG.info("timeslotSubmit goNext");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
         stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
+
+        final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
+        return new ModelAndView(new RedirectView(redirectTarget));
+    }
+
+    private ModelAndView goBack() {
+        LOG.info("timeslotSubmit goBack");
 
         final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
         return new ModelAndView(new RedirectView(redirectTarget));

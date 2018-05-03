@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.statemachine.StateContext;
+import org.springframework.statemachine.action.Action;
 import org.springframework.statemachine.config.EnableStateMachine;
 import org.springframework.statemachine.config.EnumStateMachineConfigurerAdapter;
 import org.springframework.statemachine.config.builders.StateMachineConfigurationConfigurer;
@@ -97,18 +99,21 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
                 .source(Pages.BASKET).target(Pages.TIMESLOT)
                 .event(Events.BASKET_PAGE_SEEN)
                 .event(Events.BASKET_CREATED)
+                .action(action())
                 .and()
 
                 .withExternal()
                 .source(Pages.TIMESLOT).target(Pages.CONFIRMATION)
                 .event(Events.TIMESLOT_PAGE_SEEN)
                 .event(Events.TIMESLOT_SELECTED)
+                .action(action())
                 .and()
 
                 .withExternal()
                 .source(Pages.CONFIRMATION).target(Pages.AFTERSALE)
                 .event(Events.CONFIRMATION_PAGE_SEEN)
-                .event(Events.ORDER_CONFIRMED);
+                .event(Events.ORDER_CONFIRMED)
+                .action(action());
 
     }
 
@@ -130,8 +135,22 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
 
     @Bean
     public Guard<Pages, Events> guard() {
-        LOG.info("Guard");
         return context -> false;
     }
 
+    @Bean
+    public Action<Pages, Events> action() {
+        return new Action<Pages, Events>() {
+
+
+            @Override
+            public void execute(StateContext<Pages, Events> context) {
+                context.getExtendedState().getVariables().put("mykey", "myvalue");
+
+                LOG.info("____ CONFIG: " + context.getStateMachine().getState().getId().url);
+                LOG.info("____ CONFIG: " + context.getExtendedState().getVariables());
+                LOG.info("____ CONFIG: " + context.getMessageHeaders().get(0));
+            }
+        };
+    }
 }
