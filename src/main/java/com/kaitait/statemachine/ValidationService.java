@@ -38,7 +38,10 @@ public class ValidationService {
     }
 
     static String getFurthestPath(Pages current) {
-        if (current.order <= Pages.values().length) {
+        if (current.order == Pages.values().length) {
+            return Pages.BASKET.url;
+        }
+        if (current.order < Pages.values().length) {
             return Pages.get(current.order +1).url;
         }
         return current.url;

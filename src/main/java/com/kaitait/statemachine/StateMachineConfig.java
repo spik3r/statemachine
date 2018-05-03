@@ -5,8 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.statemachine.ExtendedState;
 import org.springframework.statemachine.StateContext;
-import org.springframework.statemachine.StateMachineContext;
+import org.springframework.statemachine.access.StateMachineAccess;
+import org.springframework.statemachine.access.StateMachineFunction;
 import org.springframework.statemachine.action.Action;
 import org.springframework.statemachine.config.EnableStateMachine;
 import org.springframework.statemachine.config.EnumStateMachineConfigurerAdapter;
@@ -16,9 +18,11 @@ import org.springframework.statemachine.config.builders.StateMachineTransitionCo
 import org.springframework.statemachine.listener.StateMachineListener;
 import org.springframework.statemachine.listener.StateMachineListenerAdapter;
 import org.springframework.statemachine.state.State;
+import org.springframework.statemachine.support.DefaultExtendedState;
 import org.springframework.statemachine.support.DefaultStateMachineContext;
-import java.security.Guard;
+
 import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @EnableStateMachine
@@ -81,6 +85,10 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
                 .source(Pages.CONFIRMATION).target(Pages.AFTERSALE)
                 .event(Events.CONFIRMATION_PAGE_SEEN)
                 .event(Events.ORDER_CONFIRMED);
+//                .and()
+
+//                .withExternal()
+//                .source(Pages.AFTERSALE).target(Pages.BASKET)
 //                .action(myAction());
 
     }
@@ -101,16 +109,35 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
         };
     }
 
-//    public Action<StateContext<Pages, Events> myAction() {
-//        return new Action<String, String>() {
-//
-//            @Override
-//            public void execute(StateContext<String, String> context) {
-//                context.getStateMachine().getStateMachineAccessor().doWithAllRegions(access -> {
-//                    access.resetStateMachine(new DefaultStateMachineContext<Pages, Events>(Pages.BASKET, Events.BASKET_PAGE_SEEN, new DefaultStateMachineContext<Pages, Events>());
-//                });
-//            }
-//        };
-//    }
+    @Bean
+    public Action<Pages, Events> myAction() {
+        return new Action<Pages, Events>() {
 
+            @Override
+            public void execute(StateContext<Pages, Events> context) {
+                // do something
+                LOG.info("____RESETTING STATEMACHINE");
+
+
+                Map<Object, Object> variables = new HashMap<Object, Object>();
+                variables.put("foo", 1);
+//                variables.put(Pages.values(), Events.values());
+                ExtendedState extendedState = new DefaultExtendedState(variables);
+                DefaultStateMachineContext<Pages,Events> stateMachineContext = new DefaultStateMachineContext<Pages, Events>(Pages.BASKET, Events.BASKET_PAGE_SEEN, null, extendedState);
+                LOG.info("____history: " + stateMachineContext.getHistoryStates());
+                context.getStateMachine().getStateMachineAccessor().doWithAllRegions(new StateMachineFunction<StateMachineAccess<Pages, Events>>() {
+                    @Override
+                    public void apply(StateMachineAccess<Pages, Events> function) {
+                        context.getStateMachine().stop();
+                        function.resetStateMachine(stateMachineContext);
+                        context.getStateMachine().getExtendedState().getVariables().clear();
+                        context.getStateMachine().start();
+                        context.getStateMachine().getInitialState();
+                        LOG.info("____after apply state is: " + context.getStateMachine().getState());
+                        LOG.info("____history: " + stateMachineContext.getHistoryStates());
+                    }
+                });
+            }
+        };
+    }
 }

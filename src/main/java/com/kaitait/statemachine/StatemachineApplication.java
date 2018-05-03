@@ -10,7 +10,7 @@ public class StatemachineApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(StatemachineApplication.class, args);
-		RedisService service = new RedisService();
-		service.doRedisFoo();
+//		RedisService service = new RedisService();
+//		service.doRedisFoo();
 	}
 }

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
-import org.springframework.statemachine.support.DefaultStateMachineContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
+
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
@@ -49,7 +49,7 @@ public class CheckoutController {
     }
 
     @RequestMapping(path = "checkout/basket_submit", method = RequestMethod.GET)
-    public ModelAndView basketSubmit(@RequestParam(value = "basketAmount", required = false, defaultValue = "0") final int basketAmount) throws Exception {
+    public ModelAndView basketSubmit(@RequestParam(name = "basketAmount", value = "basketAmount", required = false, defaultValue = "0") final int basketAmount) throws Exception {
         LOG.info("basketSubmit");
 
         LOG.info("basketAmount: " + basketAmount);
@@ -57,8 +57,7 @@ public class CheckoutController {
 
         stateMachine.sendEvent(Events.BASKET_CREATED);
 
-        final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
-        return new ModelAndView(new RedirectView(redirectTarget));
+        return goNext();
     }
 
 
@@ -85,15 +84,15 @@ public class CheckoutController {
 
         LOG.info("timeSlotId: " + timeSlotCheckbox);
         stateMachine.getExtendedState().getVariables().put("timeslotValid", timeSlotCheckbox);
-
+        stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
 
         return goNext();
     }
 
     private ModelAndView goNext() {
-        LOG.info("timeslotSubmit goNext");
+        LOG.info("goNext");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
-        stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
+//        stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
 
         final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
         return new ModelAndView(new RedirectView(redirectTarget));
