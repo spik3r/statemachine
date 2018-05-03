@@ -6,10 +6,10 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public enum Pages {
-    BASKET(1, "checkout/basket"),
-    TIMESLOT(2, "checkout/timeslot"),
-    CONFIRMATION(3, "checkout/confirmation"),
-    AFTERSALE(4, "checkout/aftersale");
+    BASKET(1, "basket"),
+    TIMESLOT(2, "timeslot"),
+    CONFIRMATION(3, "confirmation"),
+    AFTERSALE(4, "aftersale");
 
     final int order;
     final String url;
@@ -17,6 +17,9 @@ public enum Pages {
     private Pages(int order, String url) {
         this.order = order;
         this.url = url;
+    }
+    public String getUrl() {
+        return this.url;
     }
 
     public static Pages find(int page, Supplier<? extends Pages> byDef) {
@@ -27,7 +30,6 @@ public enum Pages {
     private static final Map lookup =
             new HashMap();
     static {
-        //Create reverse lookup hash map
         for(Pages page : Pages.values())
             lookup.put(page.getOrder(), page);
     }
@@ -35,8 +37,6 @@ public enum Pages {
     public int getOrder() { return order; }
 
     public static Pages get(int order) {
-        //the reverse lookup by simply getting
-        //the value from the lookup HsahMap.
         return (Pages) lookup.get(order);
     }
 }

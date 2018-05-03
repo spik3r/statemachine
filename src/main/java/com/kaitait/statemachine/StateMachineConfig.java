@@ -13,6 +13,7 @@ import org.springframework.statemachine.guard.Guard;
 import org.springframework.statemachine.listener.StateMachineListener;
 import org.springframework.statemachine.listener.StateMachineListenerAdapter;
 import org.springframework.statemachine.state.State;
+import org.springframework.web.servlet.ViewResolver;
 
 @Configuration
 @EnableStateMachine
@@ -93,17 +94,20 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
 
         transitions
                 .withExternal()
-                .source(Pages.BASKET).target(Pages.TIMESLOT).event(Events.BASKET_PAGE_SEEN)
+                .source(Pages.BASKET).target(Pages.TIMESLOT)
+                .event(Events.BASKET_PAGE_SEEN)
                 .event(Events.BASKET_CREATED)
                 .and()
 
                 .withExternal()
-                .source(Pages.TIMESLOT).target(Pages.CONFIRMATION).event(Events.TIMESLOT_PAGE_SEEN)
+                .source(Pages.TIMESLOT).target(Pages.CONFIRMATION)
+                .event(Events.TIMESLOT_PAGE_SEEN)
                 .event(Events.TIMESLOT_SELECTED)
                 .and()
 
                 .withExternal()
-                .source(Pages.CONFIRMATION).target(Pages.AFTERSALE).event(Events.CONFIRMATION_PAGE_SEEN)
+                .source(Pages.CONFIRMATION).target(Pages.AFTERSALE)
+                .event(Events.CONFIRMATION_PAGE_SEEN)
                 .event(Events.ORDER_CONFIRMED);
 
     }
@@ -129,4 +133,5 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
         LOG.info("Guard");
         return context -> false;
     }
+
 }

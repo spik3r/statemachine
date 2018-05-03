@@ -9,6 +9,7 @@ import org.springframework.statemachine.StateMachine;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletResponse;
@@ -23,6 +24,8 @@ public class CheckoutController {
     @Autowired
     private StateMachine<Pages, Events> stateMachine;
 
+    private final ValidationService validationService = ValidationService.getValidator();
+
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutController.class);
 
     @RequestMapping(path = "checkout/basket")
@@ -36,17 +39,18 @@ public class CheckoutController {
                 .build();
         stateMachine.sendEvent(eventsMessage);
         model.addAttribute("page", "basket");
+        model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId()));
         return "basket";
     }
 
     @RequestMapping(path = "checkout/basket_submit")
-    public RedirectView basketSubmit() throws IOException {
+    public ModelAndView basketSubmit(HttpServletResponse httpServletResponse) throws IOException {
         LOG.info("basketSubmit");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
         stateMachine.sendEvent(Events.BASKET_CREATED);
-        RedirectView rv = new RedirectView();
-        rv.setUrl("timeslot");
-        return rv;
+
+        final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
+        return new ModelAndView(new RedirectView(redirectTarget));
     }
 
 
@@ -58,22 +62,19 @@ public class CheckoutController {
 
         stateMachine.sendEvent(Events.TIMESLOT_PAGE_SEEN);
         model.addAttribute("page", "timeslot");
+        model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId()));
         return "timeslot";
     }
 
 
     @RequestMapping(path = "checkout/timeslot_submit")
-    public RedirectView timeslotSubmit(HttpServletResponse response) throws IOException {
+    public ModelAndView timeslotSubmit(HttpServletResponse response) throws IOException {
         LOG.info("timeslotSubmit");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
-        RedirectView rv = new RedirectView();
-        if (!isOnCorrectPage(stateMachine.getState().getId(), Pages.TIMESLOT)) {
-             rv.setUrl(getRedirectURL(response, stateMachine));
-            return rv;
-        }
         stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
-        rv.setUrl("confirmation");
-        return rv;
+
+        final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
+        return new ModelAndView(new RedirectView(redirectTarget));
     }
 
     @RequestMapping(path = "checkout/confirmation")
@@ -81,14 +82,17 @@ public class CheckoutController {
         LOG.info("confirmation");
         stateMachine.sendEvent(Events.CONFIRMATION_PAGE_SEEN);
         model.addAttribute("page", "confirmation");
+        model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId()));
         return "confirmation";
     }
 
     @RequestMapping(path = "checkout/confirmation_submit")
-    public String confirmationSubmit() {
+    public ModelAndView confirmationSubmit() {
         LOG.info("confirmationSubmit");
         stateMachine.sendEvent(Events.ORDER_CONFIRMED);
-        return "confirmationSubmit";
+
+        final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
+        return new ModelAndView(new RedirectView(redirectTarget));
     }
 
     @RequestMapping(path = "checkout/aftersale")

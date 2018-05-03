@@ -19,6 +19,6 @@ public class UiController {
 
         model.addAttribute("page", "basket");
 
-        return "basket";
+        return "index";
     }
 }
