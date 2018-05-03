@@ -12,8 +12,4 @@ public enum Events {
 
     AFTER_SALE_SEEN;
 
-
-    public boolean isValid(boolean checkbox) {
-        return checkbox;
-    }
 }

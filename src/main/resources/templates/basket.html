@@ -14,7 +14,8 @@
     <hr/>
     <span th:text="${furthest}">Text ...</span>
     <!--<button type="button" class="btn btn-default pull-right"><a th:href="@{(${furthest})}">Next</a></button>-->
-    <form>
+    <form action="/checkout/basket_submit" method="GET" >
+        <input type="number" name="basketAmount"><br>
           <button type="submit" class="btn btn-default pull-right"><a th:href="@{basket_submit}">Next</a></button>
     </form>
     <p class="text-center">

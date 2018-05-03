@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
+import org.springframework.statemachine.support.DefaultStateMachineContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,13 +14,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
-
 import javax.servlet.http.HttpServletResponse;
-import javax.websocket.server.PathParam;
 import java.io.IOException;
-
-import static com.kaitait.statemachine.ValidationService.getRedirectURL;
-import static com.kaitait.statemachine.ValidationService.isOnCorrectPage;
 
 @Controller
 public class CheckoutController {
@@ -35,7 +31,7 @@ public class CheckoutController {
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutController.class);
 
     @RequestMapping(path = "checkout/basket")
-    public String basket(Model model) {
+    public String basket(Model model) throws Exception {
         LOG.info("basket");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
         // Two ways to send events the quick way with sendEvent or sendEvent with a message incase you need headers etc
@@ -44,15 +40,21 @@ public class CheckoutController {
                 .setHeader("header_foo", "bar")
                 .build();
         stateMachine.sendEvent(eventsMessage);
+
+
+
         model.addAttribute("page", "basket");
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId()));
         return "basket";
     }
 
-    @RequestMapping(path = "checkout/basket_submit")
-    public ModelAndView basketSubmit(HttpServletResponse httpServletResponse) throws IOException {
+    @RequestMapping(path = "checkout/basket_submit", method = RequestMethod.GET)
+    public ModelAndView basketSubmit(@RequestParam(value = "basketAmount", required = false, defaultValue = "0") final int basketAmount) throws Exception {
         LOG.info("basketSubmit");
-        LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
+
+        LOG.info("basketAmount: " + basketAmount);
+        stateMachine.getExtendedState().getVariables().put("basketAmount", basketAmount);
+
         stateMachine.sendEvent(Events.BASKET_CREATED);
 
         final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
@@ -62,7 +64,7 @@ public class CheckoutController {
 
 
     @RequestMapping(path = "checkout/timeslot")
-    public String timeslot(Model model, HttpServletResponse response) throws IOException {
+    public String timeslot(Model model, HttpServletResponse response) throws Exception {
         LOG.info("timeslot");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
 
@@ -72,7 +74,6 @@ public class CheckoutController {
                 .build();
         stateMachine.sendEvent(eventsMessage);
 
-//        stateMachine.sendEvent(Events.TIMESLOT_PAGE_SEEN);
         model.addAttribute("page", "timeslot");
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId()));
         return "timeslot";
@@ -83,12 +84,10 @@ public class CheckoutController {
     public ModelAndView timeslotSubmit(@RequestParam(value = "isValid", required = false, defaultValue = "false") final boolean timeSlotCheckbox) throws IOException {
 
         LOG.info("timeSlotId: " + timeSlotCheckbox);
+        stateMachine.getExtendedState().getVariables().put("timeslotValid", timeSlotCheckbox);
 
-        if (timeSlotValidator.isValid(timeSlotCheckbox)) {
-            stateMachine.getExtendedState();
-            return goNext();
-        }
-        return goBack();
+
+        return goNext();
     }
 
     private ModelAndView goNext() {
@@ -132,4 +131,5 @@ public class CheckoutController {
         stateMachine.sendEvent(Events.AFTER_SALE_SEEN);
         return "aftersale";
     }
+
 }
