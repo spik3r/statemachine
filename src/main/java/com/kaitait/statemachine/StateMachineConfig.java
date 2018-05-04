@@ -33,6 +33,8 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
     TimeSlotValidator timeSlotValidator;
     @Autowired
     BasketValidator basketValidator;
+//    @Autowired
+//    ReturnToBasketValidator returnToBasketValidator;
     @Autowired
     NextPage nextPage;
 
@@ -88,14 +90,36 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
                 .withExternal()
                 .source(Pages.CONFIRMATION).target(Pages.AFTERSALE)
                 .event(Events.CONFIRMATION_PAGE_SEEN)
-                .event(Events.ORDER_CONFIRMED);
+                .event(Events.ORDER_CONFIRMED)
 
                   // Invalidating previous steps
+                .and()
+                .withExternal()
+                .source(Pages.TIMESLOT).target(Pages.BASKET)
+                .event(Events.BASKET_CHANGED)
+
+                .and()
+                .withExternal()
+                .source(Pages.CONFIRMATION).target(Pages.BASKET)
+                .event(Events.BASKET_CHANGED)
+
+                 .and()
+                .withExternal()
+                .source(Pages.CONFIRMATION).target(Pages.TIMESLOT)
+                .event(Events.TIMESLOT_CHANGED);
+
+//                .guard(returnToBasketValidator);
+//                .action(invalidateBasket());
+
 //                .and()
 //                .withExternal()
 //                .source(Pages.CONFIRMATION).target(Pages.BASKET)
-//                .source(Pages.TIMESLOT).target(Pages.BASKET);
-//                .action(myAction());
+//                .event(Events.BASKET_CHANGED)
+//                .action(invalidateBasket());
+
+        //                .source(Pages.CONFIRMATION).target(Pages.BASKET)
+        //                .source(Pages.CONFIRMATION).target(Pages.BASKET)
+        //                .action(myAction());
 
     }
 
@@ -154,6 +178,14 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
         };
     }
 
+
+//    @Bean public Action<Pages, Events> invalidateBasket() {
+//
+//        return (context) -> {
+//            nextPage.invalidateBasket();
+//        };
+//
+//    }
 
     @Bean public Action<Pages, Events> goNext() {
 

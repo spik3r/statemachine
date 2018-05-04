@@ -16,8 +16,6 @@ public class BasketValidator implements org.springframework.statemachine.guard.G
         LOG.info(String.valueOf(stateContext.getExtendedState().getVariables().get("basketAmount")));
         LOG.info("____ CONFIG: " + stateContext.getExtendedState().getVariables());
         return (Integer)stateContext.getExtendedState().getVariables().get("basketAmount") >= 40;
-//        CheckoutController c;
-//        c.goNext();
     }
 
 }

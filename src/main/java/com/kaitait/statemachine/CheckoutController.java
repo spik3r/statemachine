@@ -35,6 +35,9 @@ public class CheckoutController implements NextPage{
         LOG.info("basket");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
         // Two ways to send events the quick way with sendEvent or sendEvent with a message incase you need headers etc
+
+//        stateMachine.sendEvent(Events.BASKET_CHANGED);
+
         Message<Events> eventsMessage = MessageBuilder
                 .withPayload(Events.BASKET_PAGE_SEEN)
                 .setHeader("header_foo", "bar")
@@ -54,9 +57,13 @@ public class CheckoutController implements NextPage{
 
         LOG.info("basketAmount: " + basketAmount);
         stateMachine.getExtendedState().getVariables().put("basketAmount", basketAmount);
-
         stateMachine.sendEvent(Events.BASKET_CREATED);
-//        stateMachine.setStateMachineError(new RuntimeException("fooo"));
+
+
+        // Reset the state since guard is only triggered initial transition
+        if (basketAmount < 40) {
+            stateMachine.sendEvent(Events.BASKET_CHANGED);
+        }
 
         return stay();
     }
@@ -85,36 +92,26 @@ public class CheckoutController implements NextPage{
 
         LOG.info("timeSlotId: " + timeSlotCheckbox);
         stateMachine.getExtendedState().getVariables().put("timeslotValid", timeSlotCheckbox);
+
+        // Reset the state since guard is only triggered initial transition
+        if (!timeSlotCheckbox) {
+            stateMachine.sendEvent(Events.TIMESLOT_CHANGED);
+        }
+
+
         stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
 
         return stay();
-    }
-
-    private ModelAndView goNext() {
-        LOG.info("goNext");
-        LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
-        final String redirectTarget = String.valueOf(validationService.getFurthestPath(stateMachine.getState().getId()));
-
-//        final String redirectTarget = String.valueOf("aftersale");
-
-
-//        stateMachine.sendEvent(event);
-
-
-        return new ModelAndView(new RedirectView(redirectTarget));
-    }
-
-    private ModelAndView stay() {
-        LOG.info("timeslotSubmit stay");
-
-        final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
-        return new ModelAndView(new RedirectView(redirectTarget));
     }
 
     @RequestMapping(path = "checkout/confirmation")
     public String confirmation(Model model) {
         LOG.info("confirmation");
         stateMachine.sendEvent(Events.CONFIRMATION_PAGE_SEEN);
+
+//        stateMachine.sendEvent(Events.BASKET_CHANGED);
+
+
         model.addAttribute("page", "confirmation");
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId()));
         return "confirmation";
@@ -138,8 +135,31 @@ public class CheckoutController implements NextPage{
         return "aftersale";
     }
 
+    private ModelAndView goNext() {
+        LOG.info("goNext");
+        LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
+        final String redirectTarget = String.valueOf(validationService.getFurthestPath(stateMachine.getState().getId()));
+
+        return new ModelAndView(new RedirectView(redirectTarget));
+    }
+
+    private ModelAndView stay() {
+        LOG.info("timeslotSubmit stay");
+
+        final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
+        return new ModelAndView(new RedirectView(redirectTarget));
+    }
+
     @Override
     public void shouldGoNext() {
         goNext();
+    }
+
+    @Override
+    public void invalidateBasket() {
+        LOG.info("___ invalidateBasket");
+
+//        stateMachine.sendEvent(Events.TIMESLOT_PAGE_SEEN);
+        stateMachine.sendEvent(Events.BASKET_CHANGED);
     }
 }
