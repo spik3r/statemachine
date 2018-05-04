@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Controller
-public class CheckoutController {
+public class CheckoutController implements NextPage{
 
     @Autowired
     private StateMachine<Pages, Events> stateMachine;
@@ -56,8 +56,9 @@ public class CheckoutController {
         stateMachine.getExtendedState().getVariables().put("basketAmount", basketAmount);
 
         stateMachine.sendEvent(Events.BASKET_CREATED);
+//        stateMachine.setStateMachineError(new RuntimeException("fooo"));
 
-        return goNext();
+        return stay();
     }
 
 
@@ -86,20 +87,25 @@ public class CheckoutController {
         stateMachine.getExtendedState().getVariables().put("timeslotValid", timeSlotCheckbox);
         stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
 
-        return goNext();
+        return stay();
     }
 
     private ModelAndView goNext() {
         LOG.info("goNext");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
-//        stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
+        final String redirectTarget = String.valueOf(validationService.getFurthestPath(stateMachine.getState().getId()));
 
-        final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
+//        final String redirectTarget = String.valueOf("aftersale");
+
+
+//        stateMachine.sendEvent(event);
+
+
         return new ModelAndView(new RedirectView(redirectTarget));
     }
 
-    private ModelAndView goBack() {
-        LOG.info("timeslotSubmit goBack");
+    private ModelAndView stay() {
+        LOG.info("timeslotSubmit stay");
 
         final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
         return new ModelAndView(new RedirectView(redirectTarget));
@@ -119,8 +125,9 @@ public class CheckoutController {
         LOG.info("confirmationSubmit");
         stateMachine.sendEvent(Events.ORDER_CONFIRMED);
 
-        final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
-        return new ModelAndView(new RedirectView(redirectTarget));
+//        final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
+//        return new ModelAndView(new RedirectView(redirectTarget));
+        return stay();
     }
 
     @RequestMapping(path = "checkout/aftersale")
@@ -131,4 +138,8 @@ public class CheckoutController {
         return "aftersale";
     }
 
+    @Override
+    public void shouldGoNext() {
+        goNext();
+    }
 }

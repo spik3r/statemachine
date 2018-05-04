@@ -33,6 +33,8 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
     TimeSlotValidator timeSlotValidator;
     @Autowired
     BasketValidator basketValidator;
+    @Autowired
+    NextPage nextPage;
 
     @Override
     public void configure(StateMachineConfigurationConfigurer<Pages, Events> config)
@@ -52,7 +54,7 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
                 .withStates()
                 .initial(Pages.BASKET)
                 .stateEntry(Pages.BASKET, stateContext -> {
-                    long basketId = long.class.cast(stateContext.getExtendedState().getVariables().getOrDefault("basketId", -1L));
+                    Long basketId = Long.class.cast(stateContext.getExtendedState().getVariables().getOrDefault("basketId", -1L));
                     LOG.info("Entering Basket State/Page. basketId: " + basketId);
 
                 })
@@ -67,11 +69,13 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
             throws Exception {
 
         transitions
+                // Normal Flow
                 .withExternal()
                 .source(Pages.BASKET).target(Pages.TIMESLOT)
                 .event(Events.BASKET_PAGE_SEEN)
                 .event(Events.BASKET_CREATED)
                 .guard(basketValidator)
+                .action(goNext())
                 .and()
 
                 .withExternal()
@@ -85,10 +89,12 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
                 .source(Pages.CONFIRMATION).target(Pages.AFTERSALE)
                 .event(Events.CONFIRMATION_PAGE_SEEN)
                 .event(Events.ORDER_CONFIRMED);
-//                .and()
 
+                  // Invalidating previous steps
+//                .and()
 //                .withExternal()
-//                .source(Pages.AFTERSALE).target(Pages.BASKET)
+//                .source(Pages.CONFIRMATION).target(Pages.BASKET)
+//                .source(Pages.TIMESLOT).target(Pages.BASKET);
 //                .action(myAction());
 
     }
@@ -129,7 +135,14 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
                     @Override
                     public void apply(StateMachineAccess<Pages, Events> function) {
                         context.getStateMachine().stop();
+//                        context.getStateMachine().getExtendedState().
+
+
+
                         function.resetStateMachine(stateMachineContext);
+
+
+
                         context.getStateMachine().getExtendedState().getVariables().clear();
                         context.getStateMachine().start();
                         context.getStateMachine().getInitialState();
@@ -139,5 +152,14 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
                 });
             }
         };
+    }
+
+
+    @Bean public Action<Pages, Events> goNext() {
+
+        return (context) -> {
+            nextPage.shouldGoNext();
+        };
+
     }
 }
