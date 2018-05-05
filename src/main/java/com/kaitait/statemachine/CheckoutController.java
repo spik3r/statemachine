@@ -61,9 +61,9 @@ public class CheckoutController implements NextPage{
 
 
         // Reset the state since guard is only triggered initial transition
-        if (basketAmount < 40) {
-            stateMachine.sendEvent(Events.BASKET_CHANGED);
-        }
+//        if (basketAmount < 40) {
+//            stateMachine.sendEvent(Events.BASKET_CHANGED);
+//        }
 
         return stay();
     }
@@ -94,9 +94,9 @@ public class CheckoutController implements NextPage{
         stateMachine.getExtendedState().getVariables().put("timeslotValid", timeSlotCheckbox);
 
         // Reset the state since guard is only triggered initial transition
-        if (!timeSlotCheckbox) {
-            stateMachine.sendEvent(Events.TIMESLOT_CHANGED);
-        }
+//        if (!timeSlotCheckbox) {
+//            stateMachine.sendEvent(Events.TIMESLOT_CHANGED);
+//        }
 
 
         stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
@@ -158,8 +158,11 @@ public class CheckoutController implements NextPage{
     @Override
     public void invalidateBasket() {
         LOG.info("___ invalidateBasket");
-
-//        stateMachine.sendEvent(Events.TIMESLOT_PAGE_SEEN);
         stateMachine.sendEvent(Events.BASKET_CHANGED);
+    }
+    @Override
+    public void invalidateTimeslot() {
+        LOG.info("___ invalidateTimeslot");
+        stateMachine.sendEvent(Events.TIMESLOT_CHANGED);
     }
 }

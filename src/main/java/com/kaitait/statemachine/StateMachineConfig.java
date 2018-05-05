@@ -33,8 +33,10 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
     TimeSlotValidator timeSlotValidator;
     @Autowired
     BasketValidator basketValidator;
-//    @Autowired
-//    ReturnToBasketValidator returnToBasketValidator;
+    @Autowired
+    ReturnToBasketValidator returnToBasketValidator;
+    @Autowired
+    ReturnToTimeSlotValidator returnToTimeSlotValidator;
     @Autowired
     NextPage nextPage;
 
@@ -92,8 +94,31 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
                 .event(Events.CONFIRMATION_PAGE_SEEN)
                 .event(Events.ORDER_CONFIRMED)
 
-                  // Invalidating previous steps
+                // Invalidate Basket
                 .and()
+                .withExternal()
+                .source(Pages.TIMESLOT)
+                .target(Pages.BASKET)
+                .guard(returnToBasketValidator)
+                .action(invalidateBasket())
+
+                .and()
+                .withExternal()
+                .source(Pages.CONFIRMATION)
+                .target(Pages.BASKET)
+                .guard(returnToBasketValidator)
+                .action(invalidateBasket())
+
+                // Invalidate Timeslot
+                .and()
+                .withExternal()
+                .source(Pages.CONFIRMATION)
+                .target(Pages.TIMESLOT)
+                .guard(returnToTimeSlotValidator)
+                .action(invalidateTimesot());
+
+                  // Invalidating previous steps
+ /*               .and()
                 .withExternal()
                 .source(Pages.TIMESLOT).target(Pages.BASKET)
                 .event(Events.BASKET_CHANGED)
@@ -106,7 +131,8 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
                  .and()
                 .withExternal()
                 .source(Pages.CONFIRMATION).target(Pages.TIMESLOT)
-                .event(Events.TIMESLOT_CHANGED);
+                .event(Events.TIMESLOT_CHANGED);*/
+
 
 //                .guard(returnToBasketValidator);
 //                .action(invalidateBasket());
@@ -179,13 +205,19 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
     }
 
 
-//    @Bean public Action<Pages, Events> invalidateBasket() {
-//
-//        return (context) -> {
-//            nextPage.invalidateBasket();
-//        };
-//
-//    }
+    @Bean public Action<Pages, Events> invalidateBasket() {
+
+        return (context) -> {
+            nextPage.invalidateBasket();
+        };
+    }
+
+    @Bean public Action<Pages, Events> invalidateTimesot() {
+
+        return (context) -> {
+            nextPage.invalidateTimeslot();
+        };
+    }
 
     @Bean public Action<Pages, Events> goNext() {
 
