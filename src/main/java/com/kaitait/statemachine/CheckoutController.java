@@ -29,6 +29,7 @@ public class CheckoutController implements NextPage{
     private final ValidationService validationService = ValidationService.getValidator();
 
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutController.class);
+    private final CheckoutModel checkoutModel = new CheckoutModel();
 
     @RequestMapping(path = "checkout/basket")
     public String basket(Model model) throws Exception {
@@ -48,15 +49,21 @@ public class CheckoutController implements NextPage{
 
         model.addAttribute("page", "basket");
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId()));
+        model.addAttribute("basketAmount", checkoutModel.getBasketAmount());
+        stateMachine.getExtendedState().getVariables().put("basketAmount", checkoutModel.getBasketAmount());
+        LOG.info("____ BASKET CO MODEL: " + checkoutModel.getBasketAmount());
         return "basket";
     }
 
     @RequestMapping(path = "checkout/basket_submit", method = RequestMethod.GET)
-    public ModelAndView basketSubmit(@RequestParam(name = "basketAmount", value = "basketAmount", required = false, defaultValue = "0") final int basketAmount) throws Exception {
+    public ModelAndView basketSubmit(Model model, @RequestParam(name = "basketAmount", value = "basketAmount", required = false, defaultValue = "0") final int basketAmount) throws Exception {
         LOG.info("basketSubmit");
 
         LOG.info("basketAmount: " + basketAmount);
-        stateMachine.getExtendedState().getVariables().put("basketAmount", basketAmount);
+        model.addAttribute("basketAmount", basketAmount);
+        setBasket(basketAmount);
+        stateMachine.getExtendedState().getVariables().put("checkoutModel", checkoutModel);
+//        stateMachine.getExtendedState().getVariables().put("basketAmount", basketAmount);
         stateMachine.sendEvent(Events.BASKET_CREATED);
 
 
@@ -68,7 +75,17 @@ public class CheckoutController implements NextPage{
         return stay();
     }
 
+    private void setBasket(int basketAmount) {
+        LOG.info("++++++ setBasketID");
+        checkoutModel.setBasketAmount(basketAmount);
+        LOG.info("++++++ " + checkoutModel.getBasketAmount());
+    }
 
+    private void setTimeslot(boolean timeslotSelected) {
+        LOG.info("++++++ setTimeslot");
+        checkoutModel.setTimeslotSelected(timeslotSelected);
+        LOG.info("++++++ " + checkoutModel.getTimeslotSelected());
+    }
 
     @RequestMapping(path = "checkout/timeslot")
     public String timeslot(Model model, HttpServletResponse response) throws Exception {
@@ -82,17 +99,20 @@ public class CheckoutController implements NextPage{
         stateMachine.sendEvent(eventsMessage);
 
         model.addAttribute("page", "timeslot");
+        model.addAttribute("timeslotSelected", checkoutModel.getTimeslotSelected());
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId()));
         return "timeslot";
     }
 
 
     @RequestMapping(path = "checkout/timeslot_submit", method = RequestMethod.GET)
-    public ModelAndView timeslotSubmit(@RequestParam(value = "isValid", required = false, defaultValue = "false") final boolean timeSlotCheckbox) throws IOException {
+    public ModelAndView timeslotSubmit(Model model, @RequestParam(value = "isValid", required = false, defaultValue = "false") final boolean timeSlotCheckbox) throws IOException {
 
         LOG.info("timeSlotId: " + timeSlotCheckbox);
-        stateMachine.getExtendedState().getVariables().put("timeslotValid", timeSlotCheckbox);
-
+        stateMachine.getExtendedState().getVariables().put("timeslotSelected", timeSlotCheckbox);
+        model.addAttribute("timeslotSelected", timeSlotCheckbox);
+        stateMachine.getExtendedState().getVariables().put("checkoutModel", checkoutModel);
+        setTimeslot(timeSlotCheckbox);
         // Reset the state since guard is only triggered initial transition
 //        if (!timeSlotCheckbox) {
 //            stateMachine.sendEvent(Events.TIMESLOT_CHANGED);

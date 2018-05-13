@@ -12,10 +12,12 @@
 <div th:replace="index :: common"> </div>
 
     <hr/>
-    <span th:text="${furthest}">Text ...</span>
+    <span>furthest Page: :</span><span th:text="${furthest}">Text ...</span>
+    <br/>
+    <span>basketAmount: </span><span th:text="${basketAmount}">Text ...</span>
 
     <form action="/checkout/basket_submit" method="GET" >
-        <input type="number" name="basketAmount" label="basketAmount" value="0"/>
+        <input type="number" name="basketAmount" label="basketAmount" th:value="${basketAmount !=null}? ${basketAmount} : '0'" />
         <button type="submit" class="btn btn-default pull-right">Next</button>
     </form>
     <p class="text-center">

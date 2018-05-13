@@ -15,7 +15,9 @@ public class TimeSlotValidator implements org.springframework.statemachine.guard
     public boolean evaluate(final StateContext<Pages, Events> stateContext) {
         LOG.info(String.valueOf(stateContext.getExtendedState().getVariables().get("timeslotValid")));
         LOG.info("____ CONFIG: " + stateContext.getExtendedState().getVariables());
-        return (boolean) stateContext.getExtendedState().getVariables().get("timeslotValid");
+//        return (boolean) stateContext.getExtendedState().getVariables().get("timeslotValid");
+        final CheckoutModel checkoutModel = (CheckoutModel) stateContext.getExtendedState().getVariables().get("checkoutModel");
+        return checkoutModel.getTimeslotSelected();
     }
 
     public boolean isValid(boolean isValid) {
