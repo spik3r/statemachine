@@ -63,9 +63,9 @@ public class CheckoutController implements NextPage{
         model.addAttribute("basketAmount", basketAmount);
         setBasket(basketAmount);
         stateMachine.getExtendedState().getVariables().put("checkoutModel", checkoutModel);
-//        stateMachine.getExtendedState().getVariables().put("basketAmount", basketAmount);
         stateMachine.sendEvent(Events.BASKET_CREATED);
 
+//        stateMachine.getExtendedState().getVariables().put("basketAmount", basketAmount);
 
         // Reset the state since guard is only triggered initial transition
 //        if (basketAmount < 40) {
@@ -84,7 +84,7 @@ public class CheckoutController implements NextPage{
     private void setTimeslot(boolean timeslotSelected) {
         LOG.info("++++++ setTimeslot");
         checkoutModel.setTimeslotSelected(timeslotSelected);
-        LOG.info("++++++ " + checkoutModel.getTimeslotSelected());
+        LOG.info("++++++ checkoutModel.getTimeslotSelected() " + checkoutModel.getTimeslotSelected());
     }
 
     @RequestMapping(path = "checkout/timeslot")
@@ -99,27 +99,29 @@ public class CheckoutController implements NextPage{
         stateMachine.sendEvent(eventsMessage);
 
         model.addAttribute("page", "timeslot");
-        model.addAttribute("timeslotSelected", checkoutModel.getTimeslotSelected());
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId()));
+        model.addAttribute("timeslotSelected", checkoutModel.getTimeslotSelected());
+        stateMachine.getExtendedState().getVariables().put("timeslotSelected", checkoutModel.getTimeslotSelected());
         return "timeslot";
     }
 
 
     @RequestMapping(path = "checkout/timeslot_submit", method = RequestMethod.GET)
-    public ModelAndView timeslotSubmit(Model model, @RequestParam(value = "isValid", required = false, defaultValue = "false") final boolean timeSlotCheckbox) throws IOException {
+    public ModelAndView timeslotSubmit(Model model, @RequestParam(name = "timeslotSelected", value = "timeslotSelected", required = false, defaultValue = "false") final boolean timeslotSelected) throws IOException {
 
-        LOG.info("timeSlotId: " + timeSlotCheckbox);
-        stateMachine.getExtendedState().getVariables().put("timeslotSelected", timeSlotCheckbox);
-        model.addAttribute("timeslotSelected", timeSlotCheckbox);
+        LOG.info("###___ timeslotSelected: " + timeslotSelected);
+//        stateMachine.getExtendedState().getVariables().put("timeslotSelected", timeslotSelected);
+        model.addAttribute("timeslotSelected", timeslotSelected);
+        setTimeslot(timeslotSelected);
         stateMachine.getExtendedState().getVariables().put("checkoutModel", checkoutModel);
-        setTimeslot(timeSlotCheckbox);
+        stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
+
         // Reset the state since guard is only triggered initial transition
 //        if (!timeSlotCheckbox) {
 //            stateMachine.sendEvent(Events.TIMESLOT_CHANGED);
 //        }
 
 
-        stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
 
         return stay();
     }
