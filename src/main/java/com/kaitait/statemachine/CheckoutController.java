@@ -35,21 +35,16 @@ public class CheckoutController implements NextPage{
     public String basket(Model model) throws Exception {
         LOG.info("basket");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
-        // Two ways to send events the quick way with sendEvent or sendEvent with a message incase you need headers etc
-
-//        stateMachine.sendEvent(Events.BASKET_CHANGED);
-
         Message<Events> eventsMessage = MessageBuilder
                 .withPayload(Events.BASKET_PAGE_SEEN)
                 .setHeader("header_foo", "bar")
                 .build();
         stateMachine.sendEvent(eventsMessage);
 
-
-
         model.addAttribute("page", "basket");
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId()));
         model.addAttribute("basketAmount", checkoutModel.getBasketAmount());
+
         stateMachine.getExtendedState().getVariables().put("basketAmount", checkoutModel.getBasketAmount());
         LOG.info("____ BASKET CO MODEL: " + checkoutModel.getBasketAmount());
         return "basket";
@@ -61,34 +56,15 @@ public class CheckoutController implements NextPage{
 
         LOG.info("basketAmount: " + basketAmount);
         model.addAttribute("basketAmount", basketAmount);
-        setBasket(basketAmount);
+        checkoutModel.setBasketAmount(basketAmount);
         stateMachine.getExtendedState().getVariables().put("checkoutModel", checkoutModel);
         stateMachine.sendEvent(Events.BASKET_CREATED);
-
-//        stateMachine.getExtendedState().getVariables().put("basketAmount", basketAmount);
-
-        // Reset the state since guard is only triggered initial transition
-//        if (basketAmount < 40) {
-//            stateMachine.sendEvent(Events.BASKET_CHANGED);
-//        }
 
         return stay();
     }
 
-    private void setBasket(int basketAmount) {
-        LOG.info("++++++ setBasketID");
-        checkoutModel.setBasketAmount(basketAmount);
-        LOG.info("++++++ " + checkoutModel.getBasketAmount());
-    }
-
-    private void setTimeslot(boolean timeslotSelected) {
-        LOG.info("++++++ setTimeslot");
-        checkoutModel.setTimeslotSelected(timeslotSelected);
-        LOG.info("++++++ checkoutModel.getTimeslotSelected() " + checkoutModel.getTimeslotSelected());
-    }
-
     @RequestMapping(path = "checkout/timeslot")
-    public String timeslot(Model model, HttpServletResponse response) throws Exception {
+    public String timeslot(Model model) throws Exception {
         LOG.info("timeslot");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().order));
 
@@ -101,7 +77,9 @@ public class CheckoutController implements NextPage{
         model.addAttribute("page", "timeslot");
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId()));
         model.addAttribute("timeslotSelected", checkoutModel.getTimeslotSelected());
+
         stateMachine.getExtendedState().getVariables().put("timeslotSelected", checkoutModel.getTimeslotSelected());
+        LOG.info("____ TIMESLOT CO MODEL: " + checkoutModel.getTimeslotSelected());
         return "timeslot";
     }
 
@@ -109,19 +87,11 @@ public class CheckoutController implements NextPage{
     @RequestMapping(path = "checkout/timeslot_submit", method = RequestMethod.GET)
     public ModelAndView timeslotSubmit(Model model, @RequestParam(name = "timeslotSelected", value = "timeslotSelected", required = false, defaultValue = "false") final boolean timeslotSelected) throws IOException {
 
-        LOG.info("###___ timeslotSelected: " + timeslotSelected);
-//        stateMachine.getExtendedState().getVariables().put("timeslotSelected", timeslotSelected);
+        LOG.info("###___ timeslotSelected in: " + timeslotSelected);
         model.addAttribute("timeslotSelected", timeslotSelected);
-        setTimeslot(timeslotSelected);
+        checkoutModel.setTimeslotSelected(timeslotSelected);
         stateMachine.getExtendedState().getVariables().put("checkoutModel", checkoutModel);
         stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
-
-        // Reset the state since guard is only triggered initial transition
-//        if (!timeSlotCheckbox) {
-//            stateMachine.sendEvent(Events.TIMESLOT_CHANGED);
-//        }
-
-
 
         return stay();
     }
@@ -131,7 +101,6 @@ public class CheckoutController implements NextPage{
         LOG.info("confirmation");
         stateMachine.sendEvent(Events.CONFIRMATION_PAGE_SEEN);
 
-//        stateMachine.sendEvent(Events.BASKET_CHANGED);
 
 
         model.addAttribute("page", "confirmation");
@@ -144,8 +113,6 @@ public class CheckoutController implements NextPage{
         LOG.info("confirmationSubmit");
         stateMachine.sendEvent(Events.ORDER_CONFIRMED);
 
-//        final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
-//        return new ModelAndView(new RedirectView(redirectTarget));
         return stay();
     }
 

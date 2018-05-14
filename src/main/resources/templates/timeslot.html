@@ -17,7 +17,7 @@
     <span>timeslotSelected: </span><span th:text="${timeslotSelected}">Text ...</span>
     <!--<button type="button" class="btn btn-default pull-right"><a th:href="@{(${furthest})}">Next</a></button>-->
     <form action="/checkout/timeslot_submit" method="GET" >
-        <input type="checkbox" name="timeslotSelected" label="timeslotSelected" th:value="${timeslotSelected !=null}? ${timeslotSelected} : 'false'"/>
+        <input type="checkbox" name="timeslotSelected" label="timeslotSelected" th:checked="${timeslotSelected !=null}? ${timeslotSelected} : 'false'"/>
         <button type="submit" class="btn btn-default pull-right">Next</button>
         <!--<button type="submit" class="btn btn-default pull-right"><a th:href="@{timeslot_submit}">Next</a></button>-->
     </form>
