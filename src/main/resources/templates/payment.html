@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Basket</title>
+    <link rel="stylesheet" type="text/css" media="all"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}"/>
+</head>
+<body>
+<div class="container">
+<div th:replace="index :: common"> </div>
+
+    <hr/>
+    <span>furthest Page: :</span><span th:text="${furthest}">Text ...</span>
+    <br/>
+    <span>paymentSelected: </span><span th:text="${paymentSelected}">Text ...</span>
+
+    <form action="/checkout/payment_submit" method="GET" >
+        <input type="checkbox" name="paymentSelected" label="paymentSelected" th:checked="${paymentSelected !=null}? ${paymentSelected} : 'false'"/>
+        <button type="submit" class="btn btn-default pull-right">Next</button>
+    </form>
+    <p class="text-center">
+        The Payment Page
+        <span class="glyphicon glyphicons-fees-payments"></span>
+    </p>
+</div>
+</body>
+</html>

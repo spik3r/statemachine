@@ -11,6 +11,7 @@ import org.springframework.statemachine.access.StateMachineAccess;
 import org.springframework.statemachine.access.StateMachineFunction;
 import org.springframework.statemachine.action.Action;
 import org.springframework.statemachine.config.EnableStateMachine;
+import org.springframework.statemachine.config.EnableStateMachineFactory;
 import org.springframework.statemachine.config.EnumStateMachineConfigurerAdapter;
 import org.springframework.statemachine.config.builders.StateMachineConfigurationConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
@@ -26,6 +27,7 @@ import java.util.Map;
 
 @Configuration
 @EnableStateMachine
+//@EnableStateMachineFactory
 public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages, Events> {
     private static final Logger LOG = LoggerFactory.getLogger(StateMachineConfig.class);
 
@@ -61,8 +63,9 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
                     Long basketId = Long.class.cast(stateContext.getExtendedState().getVariables().getOrDefault("basketId", -1L));
                     LOG.info("Entering Basket State/Page. basketId: " + basketId);
 
-                })
+                }).state(Pages.ADDRESS)
                 .state(Pages.TIMESLOT)
+                .state(Pages.PAYMENT)
                 .state(Pages.CONFIRMATION)
                 .end(Pages.AFTERSALE);
 
@@ -72,82 +75,63 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
     public void configure(StateMachineTransitionConfigurer<Pages, Events> transitions)
             throws Exception {
 
-        transitions
-                // Normal Flow
-                .withExternal()
-                .source(Pages.BASKET).target(Pages.TIMESLOT)
-                .event(Events.BASKET_PAGE_SEEN)
-                .event(Events.BASKET_CREATED)
-                .guard(basketValidator)
-                .action(goNext())
-                .and()
+    transitions
+        // Normal Flow
+            .withExternal()
+            .source(Pages.BASKET).target(Pages.ADDRESS)
+            .event(Events.BASKET_PAGE_SEEN)
+            .event(Events.BASKET_CREATED)
+            .guard(basketValidator)
+            .action(goNext())
+            .and()
 
-                .withExternal()
-                .source(Pages.TIMESLOT).target(Pages.CONFIRMATION)
-                .event(Events.TIMESLOT_PAGE_SEEN)
-                .event(Events.TIMESLOT_SELECTED)
-                .guard(timeSlotValidator)
-                .and()
-
-                .withExternal()
-                .source(Pages.CONFIRMATION).target(Pages.AFTERSALE)
-                .event(Events.CONFIRMATION_PAGE_SEEN)
-                .event(Events.ORDER_CONFIRMED)
-
-                // Invalidate Basket
-                .and()
-                .withExternal()
-                .source(Pages.TIMESLOT)
-                .target(Pages.BASKET)
-                .guard(returnToBasketValidator)
-                .action(invalidateBasket())
-
-                .and()
-                .withExternal()
-                .source(Pages.CONFIRMATION)
-                .target(Pages.BASKET)
-                .guard(returnToBasketValidator)
-                .action(invalidateBasket())
-
-                // Invalidate Timeslot
-                .and()
-                .withExternal()
-                .source(Pages.CONFIRMATION)
-                .target(Pages.TIMESLOT)
-                .guard(returnToTimeSlotValidator)
-                .action(invalidateTimesot());
-
-                  // Invalidating previous steps
- /*               .and()
-                .withExternal()
-                .source(Pages.TIMESLOT).target(Pages.BASKET)
-                .event(Events.BASKET_CHANGED)
-
-                .and()
-                .withExternal()
-                .source(Pages.CONFIRMATION).target(Pages.BASKET)
-                .event(Events.BASKET_CHANGED)
-
-                 .and()
-                .withExternal()
-                .source(Pages.CONFIRMATION).target(Pages.TIMESLOT)
-                .event(Events.TIMESLOT_CHANGED);*/
+        .withExternal()
+        .source(Pages.BASKET).target(Pages.TIMESLOT)
+        .event(Events.BASKET_PAGE_SEEN)
+        .event(Events.BASKET_CREATED_DELIVERY)
+        .guard(basketValidator)
+        .action(goNext())
+        .and()
 
 
-//                .guard(returnToBasketValidator);
-//                .action(invalidateBasket());
 
-//                .and()
-//                .withExternal()
-//                .source(Pages.CONFIRMATION).target(Pages.BASKET)
-//                .event(Events.BASKET_CHANGED)
-//                .action(invalidateBasket());
+        .withExternal()
+        .source(Pages.TIMESLOT).target(Pages.CONFIRMATION)
+        .event(Events.TIMESLOT_PAGE_SEEN)
+        .event(Events.TIMESLOT_SELECTED)
+        .guard(timeSlotValidator)
+        .and()
 
-        //                .source(Pages.CONFIRMATION).target(Pages.BASKET)
-        //                .source(Pages.CONFIRMATION).target(Pages.BASKET)
-        //                .action(myAction());
+        .withExternal()
+        .source(Pages.CONFIRMATION).target(Pages.AFTERSALE)
+        .event(Events.CONFIRMATION_PAGE_SEEN)
+        .event(Events.ORDER_CONFIRMED)
+
+        // Invalidate Basket
+        .and()
+        .withExternal()
+        .source(Pages.TIMESLOT)
+        .target(Pages.BASKET)
+        .guard(returnToBasketValidator)
+        .action(invalidateBasket())
+
+        .and()
+        .withExternal()
+        .source(Pages.CONFIRMATION)
+        .target(Pages.BASKET)
+        .guard(returnToBasketValidator)
+        .action(invalidateBasket())
+
+        // Invalidate Timeslot
+        .and()
+        .withExternal()
+        .source(Pages.CONFIRMATION)
+        .target(Pages.TIMESLOT)
+        .guard(returnToTimeSlotValidator)
+        .action(invalidateTimesot());
 
     }
+
 
     @Bean
     public StateMachineListener<Pages, Events> listener() {

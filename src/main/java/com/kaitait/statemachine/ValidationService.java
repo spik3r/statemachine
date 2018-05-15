@@ -11,39 +11,59 @@ public class ValidationService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ValidationService.class);
 
-    private ValidationService(){}
-    private static final ValidationService validationService = new ValidationService();
+    private static StateMachine stateMachine;
+    private ValidationService(StateMachine stateMachine){
+        this.stateMachine = stateMachine;
+    }
+    private static ValidationService validationService;
 
     public static ValidationService getValidator() {
-        return validationService;
-    }
-
-
-    static boolean isOnCorrectPage(Pages current, Pages previous) {
-        LOG.info("oder: " + (previous.order - 1 < current.order));
-        LOG.info("oder: " + (previous.order));
-        LOG.info("oder: " + (current.order));
-        if (current.order - 1 < previous.order) {
-            return false;
+        if (validationService != null) {
+            return validationService;
         }
-        return true;
+        return new ValidationService(stateMachine);
     }
 
-    static String getRedirectURL(HttpServletResponse response, StateMachine stateMachine) throws IOException {
-        LOG.info("redirect");
-        LOG.info("redirectUrl " + stateMachine.getState().toString());
-        final String redirectUrl = stateMachine.getState().getId().toString().toLowerCase();
-        response.sendRedirect(redirectUrl);
-        return redirectUrl;
+//    public static String getFurthestPath(Pages current) {
+//        if (current.order == Pages.values().length) {
+//            return Pages.BASKET.url;
+//        }
+//        if (current.order < Pages.values().length) {
+//            return Pages.get(current.order +1).url;
+//        }
+//        return current.url;
+//    }
+
+    public static String getFurthestPath(Pages current, CheckoutType type) {
+
+        if (type == CheckoutType.PICKUP) {
+            String path = getFurthestPickupPath(current);
+            LOG.info("getFurthestPickupPath: " + path);
+            return path;
+        }
+        String path = getFurthestDeliveryPath(current);
+        LOG.info("getFurthestDeliveryPath: " + path);
+        return path;
     }
 
-    static String getFurthestPath(Pages current) {
-        if (current.order == Pages.values().length) {
+    private static String getFurthestDeliveryPath(Pages current) {
+        if (current.deliveryOrder == Pages.values().length) {
             return Pages.BASKET.url;
         }
-        if (current.order < Pages.values().length) {
-            return Pages.get(current.order +1).url;
+        if (current.deliveryOrder < Pages.values().length) {
+            return Pages.get(current.deliveryOrder +1).url;
         }
         return current.url;
     }
+
+    private static String getFurthestPickupPath(Pages current) {
+        if (current.pickupOrder == Pages.values().length) {
+            return Pages.BASKET.url;
+        }
+        if (current.pickupOrder < Pages.values().length) {
+            return Pages.getPickup(current.pickupOrder +1).url;
+        }
+        return current.url;
+    }
+    
 }

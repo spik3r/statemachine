@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Basket</title>
+    <link rel="stylesheet" type="text/css" media="all"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}"/>
+</head>
+<body>
+<div class="container">
+    <div th:replace="index :: common"> </div>
+
+    <hr/>
+    <p>Select checkout type:</p>
+
+    <form action="/checkout/start" method="GET" >
+
+        <input type="radio" name="type" value="delivery" checked="checked"> Delivery<br>
+        <input type="radio" name="type" value="pickup"> Pickup<br>
+
+        <button type="submit" class="btn btn-default pull-right">Next</button>
+    </form>
+    <p class="text-center">
+        The Checkout Page
+        <span class="glyphicon glyphicons-home"></span>
+    </p>
+</div>
+</body>
+</html>

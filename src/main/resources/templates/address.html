@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Basket</title>
+    <link rel="stylesheet" type="text/css" media="all"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}"/>
+</head>
+<body>
+<div class="container">
+<div th:replace="index :: common"> </div>
+
+    <hr/>
+    <span>furthest Page: :</span><span th:text="${furthest}">Text ...</span>
+    <br/>
+    <span>addressId: </span><span th:text="${addressId}">Text ...</span>
+
+    <form action="/checkout/address_submit" method="GET" >
+        <input type="text" name="addressId" label="addressId" th:value="${addressId !=null}? ${addressId} : 'abc-123'" />
+        <button type="submit" class="btn btn-default pull-right">Next</button>
+    </form>
+    <p class="text-center">
+        The Address Page
+        <span class="glyphicon glyphicons-address-book"></span>
+    </p>
+</div>
+</body>
+</html>

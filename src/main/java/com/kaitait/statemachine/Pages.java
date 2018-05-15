@@ -5,38 +5,54 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public enum Pages {
-    BASKET(1, "basket"),
-    TIMESLOT(2, "timeslot"),
-    CONFIRMATION(3, "confirmation"),
-    AFTERSALE(4, "aftersale");
+public enum Pages implements PagesBase{
+    BASKET(1, 1, "basket"),
+    ADDRESS(2, 666, "address"),
+    TIMESLOT(3, 2, "timeslot"),
+    PAYMENT(4, 777, "payment"),
+    CONFIRMATION(5, 3, "confirmation"),
+    AFTERSALE(6, 4, "aftersale");
 
-    final int order;
+    final int deliveryOrder;
+    final int pickupOrder;
     final String url;
 
-    private Pages(int order, String url) {
-        this.order = order;
+    private Pages(int deliveryOrder, int pickupOrder, String url) {
+        this.deliveryOrder = deliveryOrder;
+        this.pickupOrder = pickupOrder;
         this.url = url;
     }
     public String getUrl() {
         return this.url;
     }
 
-    public static Pages find(int page, Supplier<? extends Pages> byDef) {
-        return Arrays.asList(Pages.values()).stream()
-                .filter(e -> e.order == page).findFirst().orElseGet(byDef);
-    }
+//    public static Pages findDelivery(int page, Supplier<? extends Pages> byDef) {
+//        return Arrays.asList(Pages.values()).stream()
+//                .filter(e -> e.deliveryOrder == page).findFirst().orElseGet(byDef);
+//    }
+//
+//    public static Pages findPickup(int page, Supplier<? extends Pages> byDef) {
+//        return Arrays.asList(Pages.values()).stream()
+//                .filter(e -> e.deliveryOrder == page).findFirst().orElseGet(byDef);
+//    }
 
-    private static final Map lookup =
-            new HashMap();
+    private static final Map lookup = new HashMap();
+    private static final Map pickupLookup = new HashMap();
     static {
         for(Pages page : Pages.values())
-            lookup.put(page.getOrder(), page);
+            lookup.put(page.getDeliveryOrder(), page);
+
+        for(Pages page : Pages.values())
+            pickupLookup.put(page.getPickupOrder(), page);
     }
 
-    public int getOrder() { return order; }
+    public int getDeliveryOrder() { return deliveryOrder; }
+    public int getPickupOrder() { return pickupOrder; }
 
     public static Pages get(int order) {
         return (Pages) lookup.get(order);
+    }
+    public static Pages getPickup(int order) {
+        return (Pages) pickupLookup.get(order);
     }
 }
