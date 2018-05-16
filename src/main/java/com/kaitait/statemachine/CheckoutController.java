@@ -99,9 +99,8 @@ public class CheckoutController implements NextPage{
         model.addAttribute("page", "address");
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId(), checkoutModel.getType()));
         model.addAttribute("addressId", checkoutModel.getAddressId());
-
-        stateMachine.getExtendedState().getVariables().put("addressId", checkoutModel.getAddressId());
-        LOG.info("____ BASKET CO MODEL: " + checkoutModel.getBasketAmount());
+        LOG.info("____ ADDRESS CO MODEL: " + checkoutModel.getAddressId());
+       // stateMachine.getExtendedState().getVariables().put("addressId", checkoutModel.getAddressId());
         return "address";
     }
 
@@ -146,7 +145,46 @@ public class CheckoutController implements NextPage{
         model.addAttribute("timeslotSelected", timeslotSelected);
         checkoutModel.setTimeslotSelected(timeslotSelected);
         stateMachine.getExtendedState().getVariables().put("checkoutModel", checkoutModel);
-        stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
+        if (checkoutModel.getType() == CheckoutType.DELIVERY) {
+            stateMachine.sendEvent(Events.TIMESLOT_SELECTED_DELIVERY);
+        } else {
+            stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
+        }
+
+        return stay();
+    }
+
+
+    @RequestMapping(path = "checkout/payment")
+    public String payment(Model model) throws Exception {
+        LOG.info("payment");
+        LOG.info(String.valueOf("state: " + stateMachine.getState().getId().getDeliveryOrder()));
+
+        Message<Events> eventsMessage = MessageBuilder
+                .withPayload(Events.PAYMENT_PAGE_SEEN)
+                .setHeader("payment_header", "fooooo")
+                .build();
+        stateMachine.sendEvent(eventsMessage);
+
+        model.addAttribute("page", "payment");
+        model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId(), checkoutModel.getType()));
+        model.addAttribute("paymentSelected", checkoutModel.getPaymentSelected());
+
+        stateMachine.getExtendedState().getVariables().put("paymentSelected", checkoutModel.getPaymentSelected());
+        LOG.info("____ PAYMENT CO MODEL: " + checkoutModel.getPaymentSelected());
+        return "payment";
+    }
+
+
+    @RequestMapping(path = "checkout/payment_submit", method = RequestMethod.GET)
+    public ModelAndView paymentubmit(Model model, @RequestParam(name = "paymentSelected", value = "paymentSelected", required = false, defaultValue = "false") final boolean paymentSelected) throws IOException {
+
+        LOG.info("###___ timeslotSelected in: " + paymentSelected);
+        model.addAttribute("timeslotSelected", paymentSelected);
+        checkoutModel.setPaymentSelected(paymentSelected);
+        stateMachine.getExtendedState().getVariables().put("checkoutModel", checkoutModel);
+
+        stateMachine.sendEvent(Events.PAYMENT_SELECTED);
 
         return stay();
     }

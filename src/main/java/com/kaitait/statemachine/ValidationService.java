@@ -51,6 +51,7 @@ public class ValidationService {
             return Pages.BASKET.url;
         }
         if (current.deliveryOrder < Pages.values().length) {
+            LOG.info("GOING TO: " + Pages.get(current.deliveryOrder +1).url);
             return Pages.get(current.deliveryOrder +1).url;
         }
         return current.url;
