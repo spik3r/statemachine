@@ -31,10 +31,14 @@ import java.util.Map;
 public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages, Events> {
     private static final Logger LOG = LoggerFactory.getLogger(StateMachineConfig.class);
 
+
+    @Autowired
+    BasketValidator basketValidator;
     @Autowired
     TimeSlotValidator timeSlotValidator;
     @Autowired
-    BasketValidator basketValidator;
+    PaymentValidator paymentValidator;
+
     @Autowired
     ReturnToBasketValidator returnToBasketValidator;
     @Autowired
@@ -149,7 +153,26 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
         .source(Pages.CONFIRMATION)
         .target(Pages.TIMESLOT)
         .guard(returnToTimeSlotValidator)
-        .action(invalidateTimesot());
+        .action(invalidateTimesot())
+
+    // testing
+        .and()
+        .withLocal()
+        .source(Pages.BASKET).target(Pages.CONFIRMATION)
+        .event(Events.BASKET_PAGE_SEEN)
+            .guard(basketValidator)
+        .event(Events.TIMESLOT_PAGE_SEEN)
+            .guard(timeSlotValidator)
+        .action(goNext())
+
+            .and()
+            .withLocal()
+            .source(Pages.TIMESLOT).target(Pages.CONFIRMATION)
+            .event(Events.TIMESLOT_PAGE_SEEN)
+            .guard(timeSlotValidator)
+            .event(Events.PAYMENT_PAGE_SEEN)
+            .guard(paymentValidator)
+            .action(goNext());
 
     }
 

@@ -86,6 +86,7 @@ public class CheckoutController implements NextPage{
         } else {
             stateMachine.sendEvent(Events.BASKET_CREATED);
         }
+        stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
 
         return stay("basket");
     }
@@ -244,9 +245,11 @@ public class CheckoutController implements NextPage{
         LOG.info("timeslotSubmit stay");
 
         final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
-        if (requestUrl.equalsIgnoreCase(redirectTarget)) {
+//        if (requestUrl.equalsIgnoreCase(redirectTarget)) {
+        if (validationService.canSeePage(requestUrl)) { //todo keep going here
             return new ModelAndView(redirectTarget);
         }
+
         return new ModelAndView(new RedirectView(redirectTarget));
 
 //        return new ModelAndView(redirectTarget);

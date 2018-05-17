@@ -66,5 +66,18 @@ public class ValidationService {
         }
         return current.url;
     }
-    
+
+    public boolean canSeePage(Pages current, CheckoutType type, String targerUrl) {
+        if (type == CheckoutType.PICKUP) {
+            int currentOder = current.getPickupOrder();
+            Pages target = Pages.getPageForUrl(targerUrl);
+            return currentOder >= target.getPickupOrder();
+        }
+        else {
+            int currentOder = current.getDeliveryOrder();
+            Pages target = Pages.getPageForUrl(targerUrl);
+            return currentOder >= target.getDeliveryOrder();
+        }
+
+    }
 }

@@ -29,12 +29,16 @@ public enum Pages implements PagesBase{
 
     private static final Map lookup = new HashMap();
     private static final Map pickupLookup = new HashMap();
+    private static final Map urlLookup = new HashMap();
     static {
         for(Pages page : Pages.values())
             lookup.put(page.getDeliveryOrder(), page);
 
         for(Pages page : Pages.values())
             pickupLookup.put(page.getPickupOrder(), page);
+
+        for(Pages page : Pages.values())
+            urlLookup.put(page.getUrl(), page);
     }
 
     public int getDeliveryOrder() { return deliveryOrder; }
@@ -45,5 +49,9 @@ public enum Pages implements PagesBase{
     }
     public static Pages getPickup(int order) {
         return (Pages) pickupLookup.get(order);
+    }
+
+    public static Pages getPageForUrl(String url) {
+        return (Pages) urlLookup.get(url);
     }
 }
