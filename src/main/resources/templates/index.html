@@ -19,12 +19,29 @@
                 <a class="navbar-brand" href="/checkout">Checkout</a>
             </div>
             <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
+                <ul th:style="${type == 'pickup'} ? 'display:block' : 'display:none'" class="nav navbar-nav pickup">
                     <li th:classappend="${page == 'basket' ? 'active' : ''}">
                         <a href="#" th:href="@{/checkout/basket}">Basket</a>
                     </li>
                     <li th:classappend="${page == 'timeslot' ? 'active' : ''}">
                         <a href="#" th:href="@{/checkout/timeslot}">Timeslot</a>
+                    </li>
+                    <li th:classappend="${page == 'confirmation' ? 'active' : ''}">
+                        <a href="#" th:href="@{/checkout/confirmation}">Confirmation</a>
+                    </li>
+                </ul>
+                <ul th:style="${type == 'delivery'} ? 'display:block' : 'display:none'" class="nav navbar-nav delivery">
+                    <li th:classappend="${page == 'basket' ? 'active' : ''}">
+                        <a href="#" th:href="@{/checkout/basket}">Basket</a>
+                    </li>
+                    <li th:classappend="${page == 'address' ? 'active' : ''}">
+                        <a href="#" th:href="@{/checkout/address}">Address</a>
+                    </li>
+                    <li th:classappend="${page == 'timeslot' ? 'active' : ''}">
+                        <a href="#" th:href="@{/checkout/timeslot}">Timeslot</a>
+                    </li>
+                    <li th:classappend="${page == 'payment' ? 'active' : ''}">
+                        <a href="#" th:href="@{/checkout/payment}">Payment</a>
                     </li>
                     <li th:classappend="${page == 'confirmation' ? 'active' : ''}">
                         <a href="#" th:href="@{/checkout/confirmation}">Confirmation</a>

@@ -34,7 +34,7 @@ public class CheckoutController implements NextPage{
     public String checkout(Model model) throws Exception {
         LOG.info("checkout");
         model.addAttribute("page", "checkout");
-
+        model.addAttribute("type", "DELIVERY");
         return "checkout";
     }
 
@@ -42,7 +42,8 @@ public class CheckoutController implements NextPage{
     public String checkout(Model model, @RequestParam(name = "type", value = "type", required = false) final String type) throws Exception {
         LOG.info("checkouttype in : " + type);
         LOG.info("checkouttype enum: " + CheckoutType.getByType(type));
-        model.addAttribute("type", CheckoutType.getByType(type));
+//        model.addAttribute("type", CheckoutType.getByType(type));
+        model.addAttribute("type", type);
 
         checkoutModel = new CheckoutModel(CheckoutType.getByType(type));
         //Todo:
