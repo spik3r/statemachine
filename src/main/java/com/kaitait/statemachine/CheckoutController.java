@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
-import org.springframework.statemachine.config.StateMachineFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -86,9 +85,12 @@ public class CheckoutController implements NextPage{
         } else {
             stateMachine.sendEvent(Events.BASKET_CREATED);
         }
-        stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
 
-        return stay("basket", checkoutModel.getType(), stateMachine.getState().getId());
+        stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
+        stateMachine.sendEvent(Events.ADDRESS_SELECTED);
+
+
+        return getNextAllowedModelAndView("basket", checkoutModel.getType(), stateMachine.getState().getId());
     }
 
     @RequestMapping(path = "checkout/address")
@@ -107,7 +109,7 @@ public class CheckoutController implements NextPage{
         model.addAttribute("addressId", checkoutModel.getAddressId());
         LOG.info("____ ADDRESS CO MODEL: " + checkoutModel.getAddressId());
        // stateMachine.getExtendedState().getVariables().put("addressId", checkoutModel.getAddressId());
-        return stay("address", checkoutModel.getType(), stateMachine.getState().getId());
+        return getNextAllowedModelAndView("address", checkoutModel.getType(), stateMachine.getState().getId());
 //        return "address";
     }
 
@@ -121,7 +123,7 @@ public class CheckoutController implements NextPage{
         stateMachine.getExtendedState().getVariables().put("checkoutModel", checkoutModel);
         stateMachine.sendEvent(Events.ADDRESS_SELECTED);
 
-        return stay("address", checkoutModel.getType(), stateMachine.getState().getId());
+        return getNextAllowedModelAndView("address", checkoutModel.getType(), stateMachine.getState().getId());
     }
 
     @RequestMapping(path = "checkout/timeslot")
@@ -142,7 +144,7 @@ public class CheckoutController implements NextPage{
 
         stateMachine.getExtendedState().getVariables().put("timeslotSelected", checkoutModel.getTimeslotSelected());
         LOG.info("____ TIMESLOT CO MODEL: " + checkoutModel.getTimeslotSelected());
-        return stay("timeslot", checkoutModel.getType(), stateMachine.getState().getId());
+        return getNextAllowedModelAndView("timeslot", checkoutModel.getType(), stateMachine.getState().getId());
 //        return "timeslot";
     }
 
@@ -160,7 +162,7 @@ public class CheckoutController implements NextPage{
             stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
         }
 
-        return stay("timeslot", checkoutModel.getType(), stateMachine.getState().getId());
+        return getNextAllowedModelAndView("timeslot", checkoutModel.getType(), stateMachine.getState().getId());
     }
 
 
@@ -182,7 +184,7 @@ public class CheckoutController implements NextPage{
         stateMachine.getExtendedState().getVariables().put("paymentSelected", checkoutModel.getPaymentSelected());
         LOG.info("____ PAYMENT CO MODEL: " + checkoutModel.getPaymentSelected());
 //        return "payment";
-        return stay("payment", checkoutModel.getType(), stateMachine.getState().getId());
+        return getNextAllowedModelAndView("payment", checkoutModel.getType(), stateMachine.getState().getId());
     }
 
 
@@ -196,7 +198,7 @@ public class CheckoutController implements NextPage{
 
         stateMachine.sendEvent(Events.PAYMENT_SELECTED);
 
-        return stay("payment", checkoutModel.getType(), stateMachine.getState().getId());
+        return getNextAllowedModelAndView("payment", checkoutModel.getType(), stateMachine.getState().getId());
     }
 
     @RequestMapping(path = "checkout/confirmation")
@@ -209,7 +211,7 @@ public class CheckoutController implements NextPage{
         model.addAttribute("page", "confirmation");
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId(), checkoutModel.getType()));
 //        return "confirmation";
-        return stay("confirmation", checkoutModel.getType(), stateMachine.getState().getId());
+        return getNextAllowedModelAndView("confirmation", checkoutModel.getType(), stateMachine.getState().getId());
     }
 
     @RequestMapping(path = "checkout/confirmation_submit")
@@ -217,7 +219,7 @@ public class CheckoutController implements NextPage{
         LOG.info("confirmationSubmit");
         stateMachine.sendEvent(Events.ORDER_CONFIRMED);
         model.addAttribute("type", checkoutModel.getType().name());
-        return stay("confirmation", checkoutModel.getType(), stateMachine.getState().getId());
+        return getNextAllowedModelAndView("confirmation", checkoutModel.getType(), stateMachine.getState().getId());
     }
 
     @RequestMapping(path = "checkout/aftersale")
@@ -241,18 +243,17 @@ public class CheckoutController implements NextPage{
         return new ModelAndView(new RedirectView(redirectTarget));
     }
 
-    private ModelAndView stay(String requestUrl, CheckoutType type, Pages current) {
-        LOG.info("timeslotSubmit stay");
+    private ModelAndView getNextAllowedModelAndView(String requestUrl, CheckoutType type, Pages current) {
+        LOG.info("timeslotSubmit getNextAllowedModelAndView");
 
         final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
 //        if (requestUrl.equalsIgnoreCase(redirectTarget)) {
-        if (validationService.canSeePage(current, type, requestUrl)) { //todo keep going here
+        if (validationService.canSeePage(current, type, requestUrl)) {
             return new ModelAndView(redirectTarget);
         }
 
         return new ModelAndView(new RedirectView(redirectTarget));
 
-//        return new ModelAndView(redirectTarget);
     }
 
     @Override

@@ -35,6 +35,8 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
     @Autowired
     BasketValidator basketValidator;
     @Autowired
+    AddressValidator addressValidator;
+    @Autowired
     TimeSlotValidator timeSlotValidator;
     @Autowired
     PaymentValidator paymentValidator;
@@ -101,7 +103,7 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
             .source(Pages.ADDRESS).target(Pages.TIMESLOT)
             .event(Events.ADDRESS_PAGE_SEEN)
             .event(Events.ADDRESS_SELECTED)
-            //TODO: .guard(addressValidator)
+            .guard(addressValidator)
             .action(goNext())
             .and()
 
@@ -157,22 +159,47 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<Pages,
 
     // testing
         .and()
-        .withLocal()
-        .source(Pages.BASKET).target(Pages.CONFIRMATION)
-        .event(Events.BASKET_PAGE_SEEN)
-            .guard(basketValidator)
-        .event(Events.TIMESLOT_PAGE_SEEN)
-            .guard(timeSlotValidator)
-        .action(goNext())
+            .withInternal()
+            .source(Pages.CONFIRMATION)
+                .event(Events.BASKET_PAGE_SEEN)
+                    .guard(basketValidator)
+                .event(Events.TIMESLOT_PAGE_SEEN)
+                    .guard(timeSlotValidator)
 
+        // testing
             .and()
-            .withLocal()
-            .source(Pages.TIMESLOT).target(Pages.CONFIRMATION)
-            .event(Events.TIMESLOT_PAGE_SEEN)
-            .guard(timeSlotValidator)
-            .event(Events.PAYMENT_PAGE_SEEN)
-            .guard(paymentValidator)
-            .action(goNext());
+                .withInternal()
+                .source(Pages.TIMESLOT)
+                .event(Events.BASKET_PAGE_SEEN)
+                    .guard(basketValidator)
+                .event(Events.ADDRESS_SELECTED)
+                    .guard(timeSlotValidator)
+                .action(goNext());
+//        .and()
+//            .withInternal()
+//            .source(Pages.TIMESLOT)
+//                .event(Events.BASKET_PAGE_SEEN)
+//                .guard(basketValidator)
+//                .event(Events.ADDRESS_PAGE_SEEN)
+//                .guard(addressValidator);
+
+//        .and()
+//        .withLocal()
+//        .source(Pages.BASKET).target(Pages.CONFIRMATION)
+//        .event(Events.BASKET_PAGE_SEEN)
+//            .guard(basketValidator)
+//        .event(Events.TIMESLOT_PAGE_SEEN)
+//            .guard(timeSlotValidator)
+//        .action(goNext())
+//
+//            .and()
+//            .withLocal()
+//            .source(Pages.TIMESLOT).target(Pages.CONFIRMATION)
+//            .event(Events.TIMESLOT_PAGE_SEEN)
+//            .guard(timeSlotValidator)
+//            .event(Events.PAYMENT_PAGE_SEEN)
+//            .guard(paymentValidator)
+//            .action(goNext());
 
     }
 
