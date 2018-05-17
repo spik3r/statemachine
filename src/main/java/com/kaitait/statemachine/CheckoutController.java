@@ -87,14 +87,13 @@ public class CheckoutController implements NextPage{
             stateMachine.sendEvent(Events.BASKET_CREATED);
         }
 
-        return stay();
+        return stay("basket");
     }
 
     @RequestMapping(path = "checkout/address")
-    public String address(Model model) throws Exception {
+    public ModelAndView address(Model model) throws Exception {
         LOG.info("address");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().getDeliveryOrder()));
-        LOG.info("_____ checkouttype enum: " + CheckoutType.getByType(type));
         model.addAttribute("type", checkoutModel.getType().name());
         Message<Events> eventsMessage = MessageBuilder
                 .withPayload(Events.ADDRESS_PAGE_SEEN)
@@ -107,7 +106,8 @@ public class CheckoutController implements NextPage{
         model.addAttribute("addressId", checkoutModel.getAddressId());
         LOG.info("____ ADDRESS CO MODEL: " + checkoutModel.getAddressId());
        // stateMachine.getExtendedState().getVariables().put("addressId", checkoutModel.getAddressId());
-        return "address";
+        return stay("address");
+//        return "address";
     }
 
     @RequestMapping(path = "checkout/address_submit", method = RequestMethod.GET)
@@ -120,11 +120,12 @@ public class CheckoutController implements NextPage{
         stateMachine.getExtendedState().getVariables().put("checkoutModel", checkoutModel);
         stateMachine.sendEvent(Events.ADDRESS_SELECTED);
 
-        return stay();
+        return stay("address");
     }
 
     @RequestMapping(path = "checkout/timeslot")
-    public String timeslot(Model model) throws Exception {
+    public ModelAndView timeslot(Model model) throws Exception {
+
         LOG.info("timeslot");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().getDeliveryOrder()));
         model.addAttribute("type", checkoutModel.getType().name());
@@ -140,7 +141,8 @@ public class CheckoutController implements NextPage{
 
         stateMachine.getExtendedState().getVariables().put("timeslotSelected", checkoutModel.getTimeslotSelected());
         LOG.info("____ TIMESLOT CO MODEL: " + checkoutModel.getTimeslotSelected());
-        return "timeslot";
+        return stay("timeslot");
+//        return "timeslot";
     }
 
 
@@ -157,12 +159,12 @@ public class CheckoutController implements NextPage{
             stateMachine.sendEvent(Events.TIMESLOT_SELECTED);
         }
 
-        return stay();
+        return stay("timeslot");
     }
 
 
     @RequestMapping(path = "checkout/payment")
-    public String payment(Model model) throws Exception {
+    public ModelAndView payment(Model model) throws Exception {
         LOG.info("payment");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().getDeliveryOrder()));
         model.addAttribute("type", checkoutModel.getType().name());
@@ -178,7 +180,8 @@ public class CheckoutController implements NextPage{
 
         stateMachine.getExtendedState().getVariables().put("paymentSelected", checkoutModel.getPaymentSelected());
         LOG.info("____ PAYMENT CO MODEL: " + checkoutModel.getPaymentSelected());
-        return "payment";
+//        return "payment";
+        return stay("payment");
     }
 
 
@@ -192,11 +195,11 @@ public class CheckoutController implements NextPage{
 
         stateMachine.sendEvent(Events.PAYMENT_SELECTED);
 
-        return stay();
+        return stay("payment");
     }
 
     @RequestMapping(path = "checkout/confirmation")
-    public String confirmation(Model model) {
+    public ModelAndView confirmation(Model model) {
         LOG.info("confirmation");
         stateMachine.sendEvent(Events.CONFIRMATION_PAGE_SEEN);
         model.addAttribute("type", checkoutModel.getType().name());
@@ -204,7 +207,8 @@ public class CheckoutController implements NextPage{
 
         model.addAttribute("page", "confirmation");
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId(), checkoutModel.getType()));
-        return "confirmation";
+//        return "confirmation";
+        return stay("confirmation");
     }
 
     @RequestMapping(path = "checkout/confirmation_submit")
@@ -212,7 +216,7 @@ public class CheckoutController implements NextPage{
         LOG.info("confirmationSubmit");
         stateMachine.sendEvent(Events.ORDER_CONFIRMED);
         model.addAttribute("type", checkoutModel.getType().name());
-        return stay();
+        return stay("confirmation");
     }
 
     @RequestMapping(path = "checkout/aftersale")
@@ -236,11 +240,16 @@ public class CheckoutController implements NextPage{
         return new ModelAndView(new RedirectView(redirectTarget));
     }
 
-    private ModelAndView stay() {
+    private ModelAndView stay(String requestUrl) {
         LOG.info("timeslotSubmit stay");
 
         final String redirectTarget = String.valueOf(stateMachine.getState().getId().getUrl());
+        if (requestUrl.equalsIgnoreCase(redirectTarget)) {
+            return new ModelAndView(redirectTarget);
+        }
         return new ModelAndView(new RedirectView(redirectTarget));
+
+//        return new ModelAndView(redirectTarget);
     }
 
     @Override

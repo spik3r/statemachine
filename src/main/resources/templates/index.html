@@ -19,18 +19,18 @@
                 <a class="navbar-brand" href="/checkout">Checkout</a>
             </div>
             <div class="navbar-collapse collapse">
-                <ul th:if="${type} == 'pickup'" class="nav navbar-nav pickup">
-                    <li th:classappend="${page == 'basket' ? 'active' : ''}">
-                        <a href="#" th:href="@{/checkout/basket}">Basket</a>
-                    </li>
-                    <li th:classappend="${page == 'timeslot' ? 'active' : ''}">
-                        <a href="#" th:href="@{/checkout/timeslot}">Timeslot</a>
-                    </li>
-                    <li th:classappend="${page == 'confirmation' ? 'active' : ''}">
-                        <a href="#" th:href="@{/checkout/confirmation}">Confirmation</a>
-                    </li>
-                </ul>
-                <ul th:if="${type} == 'delivery'" class="nav navbar-nav delivery">
+                <!--<ul th:if="${type} == 'pickup'" class="nav navbar-nav pickup">-->
+                    <!--<li th:classappend="${page == 'basket' ? 'active' : ''}">-->
+                        <!--<a href="#" th:href="@{/checkout/basket}">Basket</a>-->
+                    <!--</li>-->
+                    <!--<li th:classappend="${page == 'timeslot' ? 'active' : ''}">-->
+                        <!--<a href="#" th:href="@{/checkout/timeslot}">Timeslot</a>-->
+                    <!--</li>-->
+                    <!--<li th:classappend="${page == 'confirmation' ? 'active' : ''}">-->
+                        <!--<a href="#" th:href="@{/checkout/confirmation}">Confirmation</a>-->
+                    <!--</li>-->
+                <!--</ul>-->
+                <ul class="nav navbar-nav delivery">
                     <li th:classappend="${page == 'basket' ? 'active' : ''}">
                         <a href="#" th:href="@{/checkout/basket}">Basket</a>
                     </li>
