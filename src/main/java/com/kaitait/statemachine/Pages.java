@@ -17,24 +17,15 @@ public enum Pages implements PagesBase{
     final int pickupOrder;
     final String url;
 
-    private Pages(int deliveryOrder, int pickupOrder, String url) {
+    Pages(int deliveryOrder, int pickupOrder, String url) {
         this.deliveryOrder = deliveryOrder;
         this.pickupOrder = pickupOrder;
         this.url = url;
     }
+
     public String getUrl() {
         return this.url;
     }
-
-//    public static Pages findDelivery(int page, Supplier<? extends Pages> byDef) {
-//        return Arrays.asList(Pages.values()).stream()
-//                .filter(e -> e.deliveryOrder == page).findFirst().orElseGet(byDef);
-//    }
-//
-//    public static Pages findPickup(int page, Supplier<? extends Pages> byDef) {
-//        return Arrays.asList(Pages.values()).stream()
-//                .filter(e -> e.deliveryOrder == page).findFirst().orElseGet(byDef);
-//    }
 
     private static final Map lookup = new HashMap();
     private static final Map pickupLookup = new HashMap();

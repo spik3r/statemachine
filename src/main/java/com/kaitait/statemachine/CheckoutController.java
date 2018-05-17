@@ -64,6 +64,7 @@ public class CheckoutController implements NextPage{
         model.addAttribute("page", "basket");
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId(), checkoutModel.getType()));
         model.addAttribute("basketAmount", checkoutModel.getBasketAmount());
+        model.addAttribute("type", checkoutModel.getType().name());
 
         stateMachine.getExtendedState().getVariables().put("basketAmount", checkoutModel.getBasketAmount());
         LOG.info("____ BASKET CO MODEL: " + checkoutModel.getBasketAmount());
@@ -73,11 +74,13 @@ public class CheckoutController implements NextPage{
     @RequestMapping(path = "checkout/basket_submit", method = RequestMethod.GET)
     public ModelAndView basketSubmit(Model model, @RequestParam(name = "basketAmount", value = "basketAmount", required = false, defaultValue = "0") final int basketAmount) throws Exception {
         LOG.info("basketSubmit");
+        model.addAttribute("type", checkoutModel.getType().name());
 
         LOG.info("basketAmount: " + basketAmount);
         model.addAttribute("basketAmount", basketAmount);
         checkoutModel.setBasketAmount(basketAmount);
         stateMachine.getExtendedState().getVariables().put("checkoutModel", checkoutModel);
+
         if (checkoutModel.getType() == CheckoutType.DELIVERY) {
             stateMachine.sendEvent(Events.BASKET_CREATED_DELIVERY);
         } else {
@@ -91,6 +94,7 @@ public class CheckoutController implements NextPage{
     public String address(Model model) throws Exception {
         LOG.info("address");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().getDeliveryOrder()));
+        model.addAttribute("type", checkoutModel.getType().name());
         Message<Events> eventsMessage = MessageBuilder
                 .withPayload(Events.ADDRESS_PAGE_SEEN)
                 .setHeader("header_foo", "bar")
@@ -108,7 +112,7 @@ public class CheckoutController implements NextPage{
     @RequestMapping(path = "checkout/address_submit", method = RequestMethod.GET)
     public ModelAndView addressSubmit(Model model, @RequestParam(name = "addressId", value = "addressId", required = false, defaultValue = "abc-123") final String addressId) throws Exception {
         LOG.info("addressSubmit");
-
+        model.addAttribute("type", checkoutModel.getType().name());
         LOG.info("addressId: " + addressId);
         model.addAttribute("addressId", addressId);
         checkoutModel.setAddressId(addressId);
@@ -122,7 +126,7 @@ public class CheckoutController implements NextPage{
     public String timeslot(Model model) throws Exception {
         LOG.info("timeslot");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().getDeliveryOrder()));
-
+        model.addAttribute("type", checkoutModel.getType().name());
         Message<Events> eventsMessage = MessageBuilder
                 .withPayload(Events.TIMESLOT_PAGE_SEEN)
                 .setHeader("timeslot_header", "fooooo")
@@ -141,7 +145,7 @@ public class CheckoutController implements NextPage{
 
     @RequestMapping(path = "checkout/timeslot_submit", method = RequestMethod.GET)
     public ModelAndView timeslotSubmit(Model model, @RequestParam(name = "timeslotSelected", value = "timeslotSelected", required = false, defaultValue = "false") final boolean timeslotSelected) throws IOException {
-
+        model.addAttribute("type", checkoutModel.getType().name());
         LOG.info("###___ timeslotSelected in: " + timeslotSelected);
         model.addAttribute("timeslotSelected", timeslotSelected);
         checkoutModel.setTimeslotSelected(timeslotSelected);
@@ -160,7 +164,7 @@ public class CheckoutController implements NextPage{
     public String payment(Model model) throws Exception {
         LOG.info("payment");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().getDeliveryOrder()));
-
+        model.addAttribute("type", checkoutModel.getType().name());
         Message<Events> eventsMessage = MessageBuilder
                 .withPayload(Events.PAYMENT_PAGE_SEEN)
                 .setHeader("payment_header", "fooooo")
@@ -179,7 +183,7 @@ public class CheckoutController implements NextPage{
 
     @RequestMapping(path = "checkout/payment_submit", method = RequestMethod.GET)
     public ModelAndView paymentubmit(Model model, @RequestParam(name = "paymentSelected", value = "paymentSelected", required = false, defaultValue = "false") final boolean paymentSelected) throws IOException {
-
+        model.addAttribute("type", checkoutModel.getType().name());
         LOG.info("###___ timeslotSelected in: " + paymentSelected);
         model.addAttribute("timeslotSelected", paymentSelected);
         checkoutModel.setPaymentSelected(paymentSelected);
@@ -194,7 +198,7 @@ public class CheckoutController implements NextPage{
     public String confirmation(Model model) {
         LOG.info("confirmation");
         stateMachine.sendEvent(Events.CONFIRMATION_PAGE_SEEN);
-
+        model.addAttribute("type", checkoutModel.getType().name());
 
 
         model.addAttribute("page", "confirmation");
@@ -203,16 +207,17 @@ public class CheckoutController implements NextPage{
     }
 
     @RequestMapping(path = "checkout/confirmation_submit")
-    public ModelAndView confirmationSubmit() {
+    public ModelAndView confirmationSubmit(Model model) {
         LOG.info("confirmationSubmit");
         stateMachine.sendEvent(Events.ORDER_CONFIRMED);
-
+        model.addAttribute("type", checkoutModel.getType().name());
         return stay();
     }
 
     @RequestMapping(path = "checkout/aftersale")
-    public String aftersale() {
+    public String aftersale(Model model) {
         LOG.info("aftersale");
+        model.addAttribute("type", checkoutModel.getType().name());
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().getDeliveryOrder()));
         stateMachine.sendEvent(Events.AFTER_SALE_SEEN);
         return "aftersale";
