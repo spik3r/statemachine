@@ -34,14 +34,13 @@ public class CheckoutController implements NextPage{
     public String checkout(Model model) throws Exception {
         LOG.info("checkout");
         model.addAttribute("page", "checkout");
-        model.addAttribute("type", "DELIVERY");
         return "checkout";
     }
 
     @RequestMapping(path = "checkout/start")
     public String checkout(Model model, @RequestParam(name = "type", value = "type", required = false) final String type) throws Exception {
         LOG.info("checkouttype in : " + type);
-        LOG.info("checkouttype enum: " + CheckoutType.getByType(type));
+        LOG.info("_____ checkouttype enum: " + CheckoutType.getByType(type));
 //        model.addAttribute("type", CheckoutType.getByType(type));
         model.addAttribute("type", type);
 
@@ -51,12 +50,13 @@ public class CheckoutController implements NextPage{
     }
 
     @RequestMapping(path = "checkout/basket")
-    public String basket(Model model) throws Exception {
+    public String basket(Model model, @RequestParam(name = "type", value = "type", required = false, defaultValue = "delivery") final String type) throws Exception {
         LOG.info("basket");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().getDeliveryOrder()));
+        LOG.info("_____ checkouttype enum: " + CheckoutType.getByType(type));
         Message<Events> eventsMessage = MessageBuilder
                 .withPayload(Events.BASKET_PAGE_SEEN)
-                .setHeader("header_foo", "bar")
+                .setHeader("type", type)
                 .build();
 
         stateMachine.sendEvent(eventsMessage);
@@ -64,7 +64,7 @@ public class CheckoutController implements NextPage{
         model.addAttribute("page", "basket");
         model.addAttribute("furthest", validationService.getFurthestPath(stateMachine.getState().getId(), checkoutModel.getType()));
         model.addAttribute("basketAmount", checkoutModel.getBasketAmount());
-        model.addAttribute("type", checkoutModel.getType().name());
+        model.addAttribute("type", type);
 
         stateMachine.getExtendedState().getVariables().put("basketAmount", checkoutModel.getBasketAmount());
         LOG.info("____ BASKET CO MODEL: " + checkoutModel.getBasketAmount());
@@ -94,6 +94,7 @@ public class CheckoutController implements NextPage{
     public String address(Model model) throws Exception {
         LOG.info("address");
         LOG.info(String.valueOf("state: " + stateMachine.getState().getId().getDeliveryOrder()));
+        LOG.info("_____ checkouttype enum: " + CheckoutType.getByType(type));
         model.addAttribute("type", checkoutModel.getType().name());
         Message<Events> eventsMessage = MessageBuilder
                 .withPayload(Events.ADDRESS_PAGE_SEEN)

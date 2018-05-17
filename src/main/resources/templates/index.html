@@ -19,7 +19,7 @@
                 <a class="navbar-brand" href="/checkout">Checkout</a>
             </div>
             <div class="navbar-collapse collapse">
-                <ul th:style="${type == 'pickup'} ? '' : 'display:none'" class="nav navbar-nav pickup">
+                <ul th:if="${type} == 'pickup'" class="nav navbar-nav pickup">
                     <li th:classappend="${page == 'basket' ? 'active' : ''}">
                         <a href="#" th:href="@{/checkout/basket}">Basket</a>
                     </li>
@@ -30,7 +30,7 @@
                         <a href="#" th:href="@{/checkout/confirmation}">Confirmation</a>
                     </li>
                 </ul>
-                <ul th:style="${type == 'delivery'} ? '' : 'display:none'" class="nav navbar-nav delivery">
+                <ul th:if="${type} == 'delivery'" class="nav navbar-nav delivery">
                     <li th:classappend="${page == 'basket' ? 'active' : ''}">
                         <a href="#" th:href="@{/checkout/basket}">Basket</a>
                     </li>
